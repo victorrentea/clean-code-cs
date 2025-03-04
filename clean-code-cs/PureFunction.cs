@@ -21,17 +21,14 @@ namespace Victor.Training.Cleancode
         {
             Customer customer = customerRepo.FindById(customerId);
             List<Product> products = productRepo.FindAllById(productIds);
-
             Dictionary<long, double> basePrices = ResolveBasePrices(internalPrices, products);
-
             var (finalPrices, usedCoupons) = ApplyCoupons(customer.Coupons, products, basePrices);
-
             couponRepo.MarkUsedCoupons(customerId, usedCoupons);
             return finalPrices;
         }
-
+         
         // PURE FUNCTION
-        private static (Dictionary<long, double> finalPrices, List<Coupon> usedCoupons) ApplyCoupons(
+        static (Dictionary<long, double> finalPrices, List<Coupon> usedCoupons) ApplyCoupons(
             List<Coupon> coupons,
             List<Product> products,
             Dictionary<long, double> basePrices)
@@ -56,23 +53,24 @@ namespace Victor.Training.Cleancode
             return (finalPrices, usedCoupons);
         }
 
-        private (Dictionary<long, double> finalPrices, List<Coupon> usedCoupons) f()
-        {
-            throw new NotImplementedException();
-        }
-
+        
         private Dictionary<long, double> ResolveBasePrices(Dictionary<long, double> internalPrices, List<Product> products)
         {
-            Dictionary<long, double> basePrices = new();
-            foreach (Product product in products)
-            {
-                double price = internalPrices.ContainsKey(product.Id) ?
-                    internalPrices[product.Id] :
-                    thirdPartyPricesApi.FetchPrice(product.Id);
-                basePrices.Add(product.Id, price);
-            }
-
-            return basePrices;
+            //Dictionary<long, double> basePrices = new();
+            //foreach (Product product in products)
+            //{
+            //    double price = internalPrices.ContainsKey(product.Id) ?
+            //        internalPrices[product.Id] :
+            //        thirdPartyPricesApi.FetchPrice(product.Id);
+            //    basePrices.Add(product.Id, price);
+            //}
+            //return basePrices;
+            return products.ToDictionary(
+                 product => product.Id,
+                 product => internalPrices.ContainsKey(product.Id)
+                     ? internalPrices[product.Id]
+                     : thirdPartyPricesApi.FetchPrice(product.Id)
+             );
         }
     }
     public interface ICouponRepo
