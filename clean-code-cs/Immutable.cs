@@ -8,9 +8,9 @@ namespace Victor.Training.Cleancode
     {
         public static void Main()
         {
-            List<int> list = new List<Int32> { 1, 2, 3 }; // ArrayList
+            ImmutableList<int> list = new[] { 1, 2, 3 }.ToImmutableList();
 
-            Immutable immutable = new Immutable(1, 2, list, new Other(15));
+            Immutable immutable = new(1, 2, list, new Other(15));
             Console.WriteLine("Before: " + immutable);
 
             Wilderness(immutable);
@@ -29,39 +29,17 @@ namespace Victor.Training.Cleancode
     // shallow immutable
     public class Immutable
     {
-        private readonly int x;
-        private readonly int y;
-        //private readonly ImmutableList<int> list; //LOVE
-        private readonly List<int> list;
-        private readonly Other other;
+        public readonly int x;
+        public readonly int y;
+        public readonly ImmutableList<int> list; //
+        public readonly Other other;
 
-        public Immutable(int x, int y, List<int> list, Other other)
+        public Immutable(int x, int y, ImmutableList<int> list, Other other)
         {
             this.x = x;
             this.y = y;
-            this.list = list;
+            this.list = list; // malloc = heavy
             this.other = other;
-        }
-
-        public IEnumerable<int> GetList()
-        //public List<int> GetList()
-        {
-            return list;
-        }
-
-        public int GetX()
-        {
-            return x;
-        }
-
-        public int GetY()
-        {
-            return y;
-        }
-
-        public Other GetOther()
-        {
-            return other;
         }
 
         public override string ToString()
@@ -84,10 +62,7 @@ namespace Victor.Training.Cleancode
             return a;
         }
 
-        public void SetA(int a)
-        {
-            this.a = a;
-        }
+        
 
         public override string ToString()
         {
