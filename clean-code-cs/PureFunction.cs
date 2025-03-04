@@ -125,6 +125,7 @@ namespace Victor.Training.Cleancode
         public DateTime? ShipDate { get; set; }
         public bool Active { get;  set; }
         public int Price { get; set; }
+        public bool IsRecent { get => CreationDate > DateTime.Now.AddYears(-1)}
     }
 }
 
