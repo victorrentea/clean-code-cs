@@ -27,46 +27,13 @@ namespace Victor.Training.Cleancode
     }
 
     // shallow immutable
-    public class Immutable
-    {
-        public readonly int x;
-        public readonly int y;
-        public readonly ImmutableList<int> list; //
-        public readonly Other other;
+    public readonly record struct Immutable(
+        int X,
+        int Y,
+        ImmutableList<int> List,
+        Other Other)
+    { }
 
-        public Immutable(int x, int y, ImmutableList<int> list, Other other)
-        {
-            this.x = x;
-            this.y = y;
-            this.list = list; // malloc = heavy
-            this.other = other;
-        }
 
-        public override string ToString()
-        {
-            return $"Immutable{{x={x}, y={y}, numbers={string.Join(", ", list)}, other={other}}}";
-        }
-    }
-
-    public class Other
-    {
-        private int a;
-
-        public Other(int a)
-        {
-            this.a = a;
-        }
-
-        public int GetA()
-        {
-            return a;
-        }
-
-        
-
-        public override string ToString()
-        {
-            return $"Other{{a={a}}}";
-        }
-    }
+    public readonly record struct Other(int a) { }
 }
