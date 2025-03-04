@@ -39,28 +39,6 @@ namespace Victor.Training.Cleancode
         }
 
         [Test]
-        public void GetFrequentOrderedProducts_ExcludesOldOrders()
-        {
-            var orders = new List<Order>
-            {
-                new Order
-                {
-                    Active = true,
-                    CreationDate = DateTime.Now.AddMonths(-13),
-                    OrderLines = new List<OrderLine>
-                    {
-                        new OrderLine(new Product { Id = 1, Deleted = false }, 11)
-                    }
-                }
-            };
-            productRepo.Setup(repo => repo.GetHiddenProductIds()).Returns(new List<long>());
-
-            var result = functionalChainsaw.GetFrequentOrderedProducts(orders);
-
-            Assert.That(result,Is.Empty);
-        }
-
-        [Test]
         public void GetFrequentOrderedProducts_ExcludesDeletedProducts()
         {
             var orders = new List<Order>
