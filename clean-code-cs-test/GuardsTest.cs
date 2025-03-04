@@ -9,6 +9,22 @@ namespace Victor.Training.Cleancode
     {
         private readonly Guards guards = new Guards();
 
+        [Test]
+        public void t()
+        {
+            
+            void f(Int32 x)
+            {
+                x++;
+                Console.WriteLine("inside " + x);
+            }
+
+            Int32 i = 3;
+            Console.WriteLine("Before " + i);
+            f(i);
+            Console.WriteLine("After " + i);
+        }
+
         // generated via a 10 minutes chat with GitHub Copilot
         [Test]
         public void ThrowsExceptionForBonusPackageValueLessThan10()

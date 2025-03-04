@@ -7,7 +7,7 @@ namespace Victor.Training.Cleancode
     {
         public static void Main()
         {
-            List<int> list = new List<int> { 1, 2, 3 }; // ArrayList
+            List<int> list = new List<Int32> { 1, 2, 3 }; // ArrayList
 
             Immutable immutable = new Immutable(1, 2, list, new Other(15));
             Console.WriteLine("Before: " + immutable);
@@ -20,9 +20,11 @@ namespace Victor.Training.Cleancode
         private static void Wilderness(Immutable immutable)
         {
             // dark, deep logic not expected to change the immutable object x,y
+            immutable.GetList().Clear();
         }
     }
 
+    // shallow immutable
     public class Immutable
     {
         private readonly int x;
