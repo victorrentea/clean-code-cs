@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Immutable;
 
 namespace Victor.Training.Cleancode
 {
@@ -13,6 +14,7 @@ namespace Victor.Training.Cleancode
             Console.WriteLine("Before: " + immutable);
 
             Wilderness(immutable);
+            list.Clear();
 
             Console.WriteLine("After:  " + immutable);
         }
@@ -20,7 +22,7 @@ namespace Victor.Training.Cleancode
         private static void Wilderness(Immutable immutable)
         {
             // dark, deep logic not expected to change the immutable object x,y
-            immutable.GetList().Clear();
+            //immutable.GetList().Clear();
         }
     }
 
@@ -29,6 +31,7 @@ namespace Victor.Training.Cleancode
     {
         private readonly int x;
         private readonly int y;
+        //private readonly ImmutableList<int> list; //LOVE
         private readonly List<int> list;
         private readonly Other other;
 
@@ -40,7 +43,8 @@ namespace Victor.Training.Cleancode
             this.other = other;
         }
 
-        public List<int> GetList()
+        public IEnumerable<int> GetList()
+        //public List<int> GetList()
         {
             return list;
         }
