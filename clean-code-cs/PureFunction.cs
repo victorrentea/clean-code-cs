@@ -1,15 +1,14 @@
 ﻿using System;
 namespace Victor.Training.Cleancode
 {
-
     public class PureFunction
     {
-        private readonly CustomerRepo customerRepo;
-        private readonly ThirdPartyPricesApi thirdPartyPricesApi;
-        private readonly CouponRepo couponRepo;
-        private readonly ProductRepo productRepo;
+        private readonly ICustomerRepo customerRepo;
+        private readonly IThirdPartyPricesApi thirdPartyPricesApi;
+        private readonly ICouponRepo couponRepo;
+        private readonly IProductRepo productRepo;
 
-        public PureFunction(CustomerRepo customerRepo, ThirdPartyPricesApi thirdPartyPricesApi, CouponRepo couponRepo, ProductRepo productRepo)
+        public PureFunction(ICustomerRepo customerRepo, IThirdPartyPricesApi thirdPartyPricesApi, ICouponRepo couponRepo, IProductRepo productRepo)
         {
             this.customerRepo = customerRepo;
             this.thirdPartyPricesApi = thirdPartyPricesApi;
@@ -23,11 +22,11 @@ namespace Victor.Training.Cleancode
             Customer customer = customerRepo.FindById(customerId);
             List<Product> products = productRepo.FindAllById(productIds);
 
-            List<Coupon> usedCoupons = new List<Coupon>();
-            Dictionary<long, double> finalPrices = new Dictionary<long, double>();
+            List<Coupon> usedCoupons = new();
+            Dictionary<long, double> finalPrices = new();
             foreach (Product product in products)
             {
-                double? price = internalPrices.ContainsKey(product.Id) ? internalPrices[product.Id] : (double?)null;
+                double? price = internalPrices.ContainsKey(product.Id) ? internalPrices[product.Id] : null;
                 if (price == null)
                 {
                     price = thirdPartyPricesApi.FetchPrice(product.Id);
@@ -47,12 +46,12 @@ namespace Victor.Training.Cleancode
             return finalPrices;
         }
     }
-    public interface CouponRepo
+    public interface ICouponRepo
     {
         void MarkUsedCoupons(long customerId, List<Coupon> usedCoupons);
     }
     public record Customer(List<Coupon> Coupons);
-    public interface CustomerRepo
+    public interface ICustomerRepo
     {
         Customer FindById(long customerId);
         int CountByEmail(string email);
@@ -91,12 +90,12 @@ namespace Victor.Training.Cleancode
             return price - _discountAmount;
         }
     }
-    public interface ThirdPartyPricesApi
+    public interface IThirdPartyPricesApi
     {
         double FetchPrice(long id);
     }
     public record OrderLine(Product Product, int ItemCount);
-    public interface ProductRepo
+    public interface IProductRepo
     {
         List<long> GetHiddenProductIds();
         List<Product> FindAllById(List<long> productIds);
@@ -105,76 +104,27 @@ namespace Victor.Training.Cleancode
     {
         ELECTRONICS, KIDS, ME, HOME, UNCATEGORIZED
     }
-    public interface OrderRepo
-    {
-        IEnumerable<Order> FindByActiveTrue();
-    }
+    
     public class Product
     {
         public long Id { get; set; }
         public string? Name { get; set; }
         public ProductCategory Category { get; set; }
-        public DateTime CreateDate { get; set; }
         public bool Premium { get; set; }
         public bool Deleted { get; set; }
-
-        public Product(string name, ProductCategory category)
-        {
-            Name = name;
-            Category = category;
-        }
-
-        public Product(string name)
-        {
-            Name = name;
-        }
-
-        public Product() { }
+    }
+    public interface IOrderRepo
+    {
+        IEnumerable<Order> FindByActiveTrue();
     }
     public class Order
     {
-        public long? Id { get; private set; }
-        public List<OrderLine> OrderLines { get; private set; } = new List<OrderLine>();
-        public DateTime CreationDate { get; private set; }
-        public DateTime? ShipDate { get; private set; }
-        public bool Active { get; private set; }
-        public int Price { get; private set; }
-
-        public Order SetId(long? id)
-        {
-            Id = id;
-            return this;
-        }
-
-        public Order SetOrderLines(List<OrderLine> orderLines)
-        {
-            OrderLines = orderLines;
-            return this;
-        }
-
-        public Order SetCreationDate(DateTime creationDate)
-        {
-            CreationDate = creationDate;
-            return this;
-        }
-
-        public Order SetShipDate(DateTime? shipDate)
-        {
-            ShipDate = shipDate;
-            return this;
-        }
-
-        public Order SetActive(bool active)
-        {
-            Active = active;
-            return this;
-        }
-
-        public Order SetPrice(int price)
-        {
-            Price = price;
-            return this;
-        }
+        public long? Id { get; set; }
+        public List<OrderLine> OrderLines { get; set; } = new List<OrderLine>();
+        public DateTime CreationDate { get; set; }
+        public DateTime? ShipDate { get; set; }
+        public bool Active { get;  set; }
+        public int Price { get; set; }
     }
 }
 

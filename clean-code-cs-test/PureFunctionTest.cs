@@ -7,19 +7,19 @@ namespace Victor.Training.Cleancode
 {
     public class PureFunctionsTest
     {
-        private Mock<CustomerRepo> customerRepo;
-        private Mock<ThirdPartyPricesApi> thirdPartyPrices;
-        private Mock<CouponRepo> couponRepo;
-        private Mock<ProductRepo> productRepo;
+        private Mock<ICustomerRepo> customerRepo;
+        private Mock<IThirdPartyPricesApi> thirdPartyPrices;
+        private Mock<ICouponRepo> couponRepo;
+        private Mock<IProductRepo> productRepo;
         private PureFunction priceService;
 
         [SetUp]
         public void Setup()
         {
-            customerRepo = new Mock<CustomerRepo>();
-            thirdPartyPrices = new Mock<ThirdPartyPricesApi>();
-            couponRepo = new Mock<CouponRepo>();
-            productRepo = new Mock<ProductRepo>();
+            customerRepo = new Mock<ICustomerRepo>();
+            thirdPartyPrices = new Mock<IThirdPartyPricesApi>();
+            couponRepo = new Mock<ICouponRepo>();
+            productRepo = new Mock<IProductRepo>();
             priceService = new PureFunction(customerRepo.Object, thirdPartyPrices.Object, couponRepo.Object, productRepo.Object);
         }
 
