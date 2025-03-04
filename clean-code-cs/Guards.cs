@@ -1,4 +1,5 @@
-﻿namespace Victor.Training.Cleancode
+﻿using System;
+namespace Victor.Training.Cleancode
 {
     public class Guards
     {
@@ -6,40 +7,25 @@
 
         public int GetPayAmount(Marine marine, BonusPackage bonusPackage)
         {
-            int result;
-            if (marine != null && !(bonusPackage.Value < 10 || bonusPackage.Value > 100))
+            if (marine == null || bonusPackage.Value < 10 || bonusPackage.Value > 100)
+                throw new ArgumentException("Not applicable!"); // early throw
+
+            if (marine.Dead) return DEAD_PAY_AMOUNT;
+
+            //guard condition
+            if (marine.Retired) return RetiredAmount(); // early return
+
+            if (marine.YearsOfService == null)
+                throw new ArgumentException("Any marine should have the years of service set");
+
+            int result = marine.YearsOfService.Value * 100 + bonusPackage.Value;
+            if (marine.Awards.Count > 0)
             {
-                if (!marine.Dead)
-                {
-                    if (!marine.Retired)
-                    {
-                        if (marine.YearsOfService != null)
-                        {
-                            result = marine.YearsOfService.Value * 100 + bonusPackage.Value;
-                            if (marine.Awards.Count > 0)
-                            {
-                                result += 1000;
-                            }
-                            if (marine.Awards.Count >= 3)
-                            {
-                                result += 2000;
-                            }
-                        }
-                        else
-                        {
-                            throw new ArgumentException("Any marine should have the years of service set");
-                        }
-                    }
-                    else result = RetiredAmount();
-                }
-                else
-                {
-                    result = DEAD_PAY_AMOUNT;
-                }
+                result += 1000;
             }
-            else
+            if (marine.Awards.Count >= 3)
             {
-                throw new ArgumentException("Not applicable!");
+                result += 2000;
             }
             return result;
         }
