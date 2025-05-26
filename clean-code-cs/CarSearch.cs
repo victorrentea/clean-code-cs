@@ -7,10 +7,8 @@
         {
             List<CarModel> results = carModels
                 .Where(carModel => MathUtil.IntervalsIntersect(
-                    criteria.StartYear,
-                    criteria.EndYear,
-                    carModel.StartYear,
-                    carModel.EndYear))
+                    new YearRange(criteria.StartYear,criteria.EndYear),
+                    new YearRange(carModel.StartYear,carModel.EndYear)))
                 .ToList();
             Console.WriteLine("Imagine more filtering logic ...");
             return results;
@@ -21,13 +19,9 @@
     {
         private void ApplyLengthFilter() // pretend
         {
-            Console.WriteLine(MathUtil.IntervalsIntersect(1000, 1600, 1250, 2000));
+            Console.WriteLine(MathUtil.IntervalsIntersect(new YearRange(1000, 1600), new YearRange(1250, 2000)));
         }
 
-        private void ApplyCapacityFilter() // pretend
-        {
-            Console.WriteLine(MathUtil.IntervalsIntersect(1000, 1600, 1250, 2000));
-        }
     }
     // 1) overly-specializd class; 0 chances of reuse outside of this method
     //record class CarCriteria { 
@@ -40,15 +34,20 @@
     // 2) extension function for CarModel, iff the CarModel is out of my reach
     // static public bool IntervalsIntersect(this CarModel carModel, int start, int end)
 
-    // 3) method in the CarModel = move behavior next to state = OOP 
+    // 3) method in the CarModel = move behavior next to state = OOP
+
+    // 4) Extract an "Value Object"= small immutale group of data without a PK(identity)
+    // eg: Money(ammount,currency)
+    public record class YearRange(int Start, int End);
 
     public static class MathUtil
     {
         //public static bool IntervalsIntersect(CarCriteria carCriteria) (#1)
         //static public bool IntervalsIntersect(this CarModel carModel, int start, int end) (#2)
-        public static bool IntervalsIntersect(int start1, int end1, int start2, int end2)
+        //public static bool IntervalsIntersect(int start1, int end1, int start2, int end2) (initial)
+        public static bool IntervalsIntersect(YearRange range1, YearRange range2) // #4
         {
-            return start1 <= end2 && start2 <= end1;
+            return range1.Start <= range2.End && range2.Start <= range1.End;
         }
     }
 
