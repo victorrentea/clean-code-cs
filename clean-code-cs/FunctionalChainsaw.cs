@@ -12,23 +12,18 @@ namespace Victor.Training.Cleancode
 
         public List<Product> GetFrequentOrderedProducts(List<Order> orders)
         {
-            List<long> hiddenIds = productRepo.GetHiddenProductIds();
             return orders
                 .Where(order => order.Active)
-                .Where(order => order.IsRecent)
+                .Where(order => order.CreationDate > DateTime.Now.AddYears(-1))
                 .SelectMany(order => order.OrderLines)
                 .GroupBy(orderLine => orderLine.Product, orderLine => orderLine.ItemCount)
-                .Select(g=> new { key=g.Key, sum=g.Sum()}) // SELECT key, SUM(g.itemCount
-                //.ToDictionary(g => g.Key, g => g.Sum()) // PROBLEM
-                .Where(entry => entry.sum >= 10)
-                .Select(entry => entry.key)
+                .ToDictionary(g => g.Key, g => g.Sum())
+                .Where(entry => entry.Value >= 10)
+                .Select(entry => entry.Key)
                 .Where(product => !product.Deleted)
-                //.Join
-                .Where(product => !hiddenIds.Contains(product.Id))
+                .Where(product => !productRepo.GetHiddenProductIds().Contains(product.Id))
                 .ToList();
         }
-
-        
     }
 }
 

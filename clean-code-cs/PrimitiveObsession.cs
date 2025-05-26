@@ -4,31 +4,21 @@ using System.Linq;
 
 namespace Victor.Training.Cleancode
 {
-    public enum PaymentMethod
-    {
-        CARD, CASH, SHEEP, BLOOD
-    }
     public class PrimitiveObsession
     {
         public static void Main(string[] args)
         {
-            String s = "CARd ";
-            //PaymentType paymentType = (PaymentType)Enum.Parse(typeof(PaymentType),s);
-            PaymentMethod paymentType = Enum.Parse<PaymentMethod>(s.Trim().ToUpper());
-
-
-            new PrimitiveObsession().HandlePrimitiveObsession(paymentType);
+            new PrimitiveObsession().HandlePrimitiveObsession("CARD");
         }
 
-        //public Dictionary<CustomerId, List<ProductCount>> FetchData(string paymentMethod)
-        public Dictionary<CustomerId, Dictionary<string, int>> FetchData(PaymentMethod paymentMethod)
+        public Dictionary<long, Dictionary<string, int>> FetchData(string paymentMethod)
         {
             long customerId = 1L;
             int product1Count = 2;
             int product2Count = 4;
-            return new Dictionary<CustomerId, Dictionary<string, int>>
+            return new Dictionary<long, Dictionary<string, int>>
             {
-                { new CustomerId(customerId), new Dictionary<string, int>
+                { customerId, new Dictionary<string, int>
                     {
                         { "Table", product1Count },
                         { "Chair", product2Count }
@@ -38,23 +28,20 @@ namespace Victor.Training.Cleancode
         }
 
 
-        public void HandlePrimitiveObsession(PaymentMethod paymentMethod)
+        public void HandlePrimitiveObsession(string paymentMethod)
         {
-            if (paymentMethod != PaymentMethod.CARD && paymentMethod != PaymentMethod.CASH)
+            if (paymentMethod != "CARD" && paymentMethod != "CASH")
             {
                 throw new ArgumentException("Only CARD payment method is supported");
             }
 
-            //Dictionary<CustomerId, Dictionary<string, int>> dict = FetchData(paymentMethod);
-            var boughtItemCounts = FetchData(paymentMethod);
+            var map = FetchData(paymentMethod);
 
-            foreach (var e in boughtItemCounts)
+            foreach (var e in map)
             {
                 string pl = string.Join(", ", e.Value.Select(entry => $"{entry.Value} pcs. of {entry.Key}"));
-                Console.WriteLine($"cid={e.Key.Id} got {pl}");
+                Console.WriteLine($"cid={e.Key} got {pl}");
             }
         }
     }
-    public readonly record struct CustomerId(long Id); // typealias
-    public readonly record struct ProductCount(string ProductName, uint Count); // typealias
 }

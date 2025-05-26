@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Immutable;
 
 namespace Victor.Training.Cleancode
 {
@@ -8,56 +7,85 @@ namespace Victor.Training.Cleancode
     {
         public static void Main()
         {
-            ImmutableList<int> list = new[] { 1, 2, 3 }.ToImmutableList();
+            List<int> list = new List<int> { 1, 2, 3 }; // ArrayList
 
-            Immutable immutable = new(new(1, 2), list, new Other(15));
+            Immutable immutable = new Immutable(1, 2, list, new Other(15));
             Console.WriteLine("Before: " + immutable);
 
-            Point newPosition = Wilderness(immutable); // avoid reassigning variable for other meanings.
-            Immutable translated = immutable with { Point = newPosition };
+            Wilderness(immutable);
 
-           
-            Console.WriteLine("After:  " + translated);
+            Console.WriteLine("After:  " + immutable);
         }
 
-        private static Point Wilderness(Immutable immutable)
+        private static void Wilderness(Immutable immutable)
         {
-            // dark, deep logic not expected to change the immutable object x+1,y+1
-            //immutable.GetList().Clear();
-            //immutable.X++;
-
-            //Immutable copy = immutable with
-            //{
-            //    X = immutable.X + 1,
-            //    Y = immutable.Y + 1
-            //};
-
-            return immutable.Point.Translate(+1, +1);
+            // dark, deep logic not expected to change the immutable object x,y
         }
     }
-    public readonly record struct Point(int X, int Y)
-    {
-        internal Point Translate(int dx, int dy)
-        {
-            return this with
-            {
-                X = X + dx,
-                Y = Y + dy
-            };
-        }
-    }  
 
-    // deep immutable
-    public readonly record struct Immutable(
-        //int X,
-        //int Y,
-        Point Point,
-        ImmutableList<int> List,
-        Other Other)
+    public class Immutable
     {
-        
+        private readonly int x;
+        private readonly int y;
+        private readonly List<int> list;
+        private readonly Other other;
+
+        public Immutable(int x, int y, List<int> list, Other other)
+        {
+            this.x = x;
+            this.y = y;
+            this.list = list;
+            this.other = other;
+        }
+
+        public List<int> GetList()
+        {
+            return list;
+        }
+
+        public int GetX()
+        {
+            return x;
+        }
+
+        public int GetY()
+        {
+            return y;
+        }
+
+        public Other GetOther()
+        {
+            return other;
+        }
+
+        public override string ToString()
+        {
+            return $"Immutable{{x={x}, y={y}, numbers={string.Join(", ", list)}, other={other}}}";
+        }
     }
 
+    public class Other
+    {
+        private int a;
 
-    public readonly record struct Other(int a) { }
+        public Other(int a)
+        {
+            this.a = a;
+        }
+
+        public int GetA()
+        {
+            return a;
+        }
+
+        public void SetA(int a)
+        {
+            this.a = a;
+        }
+
+        public override string ToString()
+        {
+            return $"Other{{a={a}}}";
+        }
+    }
 }
