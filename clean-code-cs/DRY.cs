@@ -47,7 +47,7 @@ namespace clean_code_cs
         public void UseCase323(int id, Task task)
         {
             // TODO: The shared called method must execute logic specific for my use-case #323
-            BooleanParameters.BigUglyMethod(id, task, true);
+            BooleanParameters.BigUglyMethod323(id, task);
         }
     }
 
@@ -55,14 +55,25 @@ namespace clean_code_cs
     public static class BooleanParameters
     {
         // ⚠️ has multiple callers
-        public static void BigUglyMethod(int storeId, Task task, bool cr323=false) // keep few bools
+        public static void BigUglyMethod(int storeId, Task task) // keep few bools
         {
             Console.WriteLine("Donkey Logic 1 " + task + " and " + storeId);
             Console.WriteLine(task);
             Console.WriteLine("Donkey Logic 3 " + task);
 
-            if (cr323)
-                Console.WriteLine("Logic just for CR#323 : " + task);
+            Console.WriteLine("Sheep Logic 1 " + storeId);
+            Console.WriteLine("Sheep Logic 2 ");
+            Console.WriteLine("Sheep Logic 3 ");
+        }
+
+        
+        public static void BigUglyMethod323(int storeId, Task task) // keep few bools
+        {
+            Console.WriteLine("Donkey Logic 1 " + task + " and " + storeId);
+            Console.WriteLine(task);
+            Console.WriteLine("Donkey Logic 3 " + task);
+
+            Console.WriteLine("Logic just for CR#323 : " + task);
 
             Console.WriteLine("Sheep Logic 1 " + storeId);
             Console.WriteLine("Sheep Logic 2 ");
