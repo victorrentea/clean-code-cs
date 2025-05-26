@@ -13,7 +13,7 @@ namespace Victor.Training.Cleancode
         public void t()
         {
             
-            void f(Int32 x)
+            void f(Int32 x) 
             {
                 x++;
                 Console.WriteLine("inside " + x);

@@ -2,45 +2,45 @@
 {
     public class Guards
     {
+        private const int SECONDS_IN_AN_HOUR = 17280;
         public static readonly int DEAD_PAY_AMOUNT = 1;
 
         public int GetPayAmount(Marine marine, BonusPackage bonusPackage)
         {
-            int result;
-            if (marine != null && !(bonusPackage.Value < 10 || bonusPackage.Value > 100))
-            {
-                if (!marine.Dead)
-                {
-                    if (!marine.Retired)
-                    {
-                        if (marine.YearsOfService != null)
-                        {
-                            result = marine.YearsOfService.Value * 100 + bonusPackage.Value;
-                            if (marine.Awards.Count > 0)
-                            {
-                                result += 1000;
-                            }
-                            if (marine.Awards.Count >= 3)
-                            {
-                                result += 2000;
-                            }
-                        }
-                        else
-                        {
-                            throw new ArgumentException("Any marine should have the years of service set");
-                        }
-                    }
-                    else result = RetiredAmount();
-                }
-                else
-                {
-                    result = DEAD_PAY_AMOUNT;
-                }
-            }
-            else
+            if (marine == null || bonusPackage.Value < 10 || bonusPackage.Value > 100)
             {
                 throw new ArgumentException("Not applicable!");
             }
+
+            if (marine.Dead)
+            {
+                return DEAD_PAY_AMOUNT;
+            }
+
+            if (marine.Retired)
+                return RetiredAmount();
+             
+            if (marine.YearsOfService == null)
+            {
+                throw new ArgumentException("Any marine should have the years of service set");
+            }
+
+            var someVar = 1;
+            if (someVar > SECONDS_IN_AN_HOUR)
+            {
+
+            }
+
+            int result = marine.YearsOfService.Value * 100 + bonusPackage.Value;
+            if (marine.Awards.Count > 0)
+            {
+                result += 1000;
+            }
+            if (marine.Awards.Count >= 3)
+            {
+                result += 2000;
+            }
+           
             return result;
         }
 

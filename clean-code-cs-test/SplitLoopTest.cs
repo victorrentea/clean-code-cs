@@ -6,6 +6,7 @@ namespace Victor.Training.Cleancode.Tests
 {
     public class SplitLoopTests
     {
+      
         [Test]
         public void ComputesCorrectAverageSalaryAndTotalConsultantSalary()
         {
