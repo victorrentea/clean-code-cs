@@ -7,10 +7,12 @@
         {
             List<CarModel> results = carModels
                 .Where(carModel => MathUtil.IntervalsIntersect(
-                    criteria.StartYear, criteria.EndYear,
-                    carModel.StartYear, carModel.EndYear))
+                    criteria.StartYear,
+                    criteria.EndYear,
+                    carModel.StartYear,
+                    carModel.EndYear))
                 .ToList();
-            Console.WriteLine("More filtering logic ...");
+            Console.WriteLine("Imagine more filtering logic ...");
             return results;
         }
     }
@@ -27,9 +29,23 @@
             Console.WriteLine(MathUtil.IntervalsIntersect(1000, 1600, 1250, 2000));
         }
     }
+    // 1) overly-specializd class; 0 chances of reuse outside of this method
+    //record class CarCriteria { 
+    //    int CriteriaStartYear;
+    //    int CriteriaEndYear;
+    //    int CarModelStartYear;
+    //    int CarModelEndYear;
+    //}
 
-    public class MathUtil
+    // 2) extension function for CarModel, iff the CarModel is out of my reach
+    // static public bool IntervalsIntersect(this CarModel carModel, int start, int end)
+
+    // 3) method in the CarModel = move behavior next to state = OOP 
+
+    public static class MathUtil
     {
+        //public static bool IntervalsIntersect(CarCriteria carCriteria) (#1)
+        //static public bool IntervalsIntersect(this CarModel carModel, int start, int end) (#2)
         public static bool IntervalsIntersect(int start1, int end1, int start2, int end2)
         {
             return start1 <= end2 && start2 <= end1;
@@ -67,6 +83,12 @@
             this.StartYear = startYear;
             this.EndYear = endYear;
         }
+
+        // prefer over extension if you have access to CarModel (#3)
+        //public bool IntervalsIntersect(int start, int end)
+        //{
+        //    return StartYear <= end && start <= EndYear;
+        //}
     }
 
     public class CarModelMapper

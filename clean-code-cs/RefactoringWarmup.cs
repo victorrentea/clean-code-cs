@@ -36,23 +36,26 @@ namespace Victor.Training.Cleancode
         {
             int b = 2;
 
-            Console.WriteLine("b=" + b);          
+            BetterName(r, "value");
 
             return 1 + b + r.X;
         }
 
+        private static void BetterName(R rr, string v) // NOSONAR
+        {
+            Console.WriteLine("b=" + rr.X + v);
+        }
+
         public double Loop(List<int> numbers)
         {
-            Console.WriteLine("b=" + 987);
-            double ssq = 0;
-            foreach (var number in numbers)
-            {
-                if (number % 2 == 0)
-                {
-                    ssq += number * number;
-                }
-            }
-            return Math.Sqrt(ssq);
+            return Math.Sqrt(ComputeSumOfSquares(numbers));
+        }
+
+        private static double ComputeSumOfSquares(List<int> numbers)
+        {
+            return numbers.Where(n => n % 2 == 0)
+                            .Select(n => n * n)
+                            .Sum();
         }
     }
 
