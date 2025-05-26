@@ -6,9 +6,9 @@
         public List<CarModel> FilterCarModels(CarSearchCriteria criteria, List<CarModel> carModels)
         {
             List<CarModel> results = carModels
-                .Where(carModel => MathUtil.IntervalsIntersect(
-                    new YearRange(criteria.StartYear,criteria.EndYear),
-                    new YearRange(carModel.StartYear,carModel.EndYear)))
+                .Where(carModel => new YearRange(criteria.StartYear, criteria.EndYear)
+                    .Intersects(
+                        new YearRange(carModel.StartYear, carModel.EndYear)))
                 .ToList();
             Console.WriteLine("Imagine more filtering logic ...");
             return results;
@@ -19,7 +19,7 @@
     {
         private void ApplyLengthFilter() // pretend
         {
-            Console.WriteLine(MathUtil.IntervalsIntersect(new YearRange(1000, 1600), new YearRange(1250, 2000)));
+            Console.WriteLine(new YearRange(1000, 1600).Intersects(new YearRange(1250, 2000)));
         }
 
     }
@@ -38,17 +38,23 @@
 
     // 4) Extract an "Value Object"= small immutale group of data without a PK(identity)
     // eg: Money(ammount,currency)
-    public record class YearRange(int Start, int End);
+    public record class YearRange(int Start, int End)
+    {
+        public bool Intersects(YearRange other)
+        {
+            return Start <= other.End && other.Start <= End;
+        }
+    }
 
     public static class MathUtil
     {
         //public static bool IntervalsIntersect(CarCriteria carCriteria) (#1)
         //static public bool IntervalsIntersect(this CarModel carModel, int start, int end) (#2)
         //public static bool IntervalsIntersect(int start1, int end1, int start2, int end2) (initial)
-        public static bool IntervalsIntersect(YearRange range1, YearRange range2) // #4
-        {
-            return range1.Start <= range2.End && range2.Start <= range1.End;
-        }
+        //public static bool IntervalsIntersect(YearRange range1, YearRange range2) // #4
+        //{
+        //    return range1.Start <= range2.End && range2.Start <= range1.End;
+        //}
     }
 
     public class CarSearchCriteria // a DTO received from JSON
@@ -66,7 +72,7 @@
         }
     }
 
-   public class CarModel // Domain Model
+    public class CarModel // Domain Model
     {
         public long? Id { get; private set; }
         public string Make { get; private set; }
@@ -74,7 +80,7 @@
         public int StartYear { get; private set; }
         public int EndYear { get; private set; }
 
-         public CarModel(string make, string model, int startYear, int endYear)
+        public CarModel(string make, string model, int startYear, int endYear)
         {
             this.Make = make;
             this.Model = model;
