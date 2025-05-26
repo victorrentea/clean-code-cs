@@ -57,28 +57,31 @@ namespace clean_code_cs
         // ⚠️ has multiple callers
         public static void BigUglyMethod(int storeId, Task task) // keep few bools
         {
-            Console.WriteLine("Donkey Logic 1 " + task + " and " + storeId);
-            Console.WriteLine(task);
-            Console.WriteLine("Donkey Logic 3 " + task);
+            Donkey(storeId, task);
+            Sheep(storeId);
+        }
+       
+        public static void BigUglyMethod323(int storeId, Task task) // keep few bools
+        {
+            Donkey(storeId, task);
+            Console.WriteLine("Logic just for CR#323 : " + task);
+            Sheep(storeId);
+        }
 
+        private static void Sheep(int storeId)
+        {
             Console.WriteLine("Sheep Logic 1 " + storeId);
             Console.WriteLine("Sheep Logic 2 ");
             Console.WriteLine("Sheep Logic 3 ");
         }
 
-        
-        public static void BigUglyMethod323(int storeId, Task task) // keep few bools
+        private static void Donkey(int storeId, Task task)
         {
             Console.WriteLine("Donkey Logic 1 " + task + " and " + storeId);
             Console.WriteLine(task);
             Console.WriteLine("Donkey Logic 3 " + task);
-
-            Console.WriteLine("Logic just for CR#323 : " + task);
-
-            Console.WriteLine("Sheep Logic 1 " + storeId);
-            Console.WriteLine("Sheep Logic 2 ");
-            Console.WriteLine("Sheep Logic 3 ");
         }
+
     }
 
     // Dummy Task class placeholder
