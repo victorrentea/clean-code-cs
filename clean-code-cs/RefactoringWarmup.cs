@@ -36,16 +36,7 @@ namespace Victor.Training.Cleancode
         {
             int b = 2;
 
-            Console.WriteLine("b=" + b);
-            Console.WriteLine("b=" + b);
-            Console.WriteLine("b=" + b);
-            Console.WriteLine("b=" + b);
-            Console.WriteLine("b=" + b);
-            Console.WriteLine("b=" + b);
-            Console.WriteLine("b=" + b);
-            Console.WriteLine("b=" + b);
-            Console.WriteLine("b=" + b);
-            Console.WriteLine("b=" + b);
+            Console.WriteLine("b=" + b);          
 
             return 1 + b + r.X;
         }
