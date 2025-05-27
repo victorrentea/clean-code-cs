@@ -1,6 +1,4 @@
-﻿using System;
-using System.Globalization;
-using System.Collections.Generic;
+﻿using System.Globalization;
 
 namespace Victor.Training.Cleancode.VideoStore
 {
