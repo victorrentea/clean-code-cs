@@ -15,25 +15,22 @@ public class Customer
         _rentals.Add(rental);
     }
 
-    public string Statement()
+    // avoid doing in-mem side-effects (not pure) after an =>
+    //_rentals.ForEach(x => statementBuilder.Append(x.GetRentalLine()));
+
+    public string Statement() => Header() + Body() + Footer();
+
+    private string Body() => string.Concat(_rentals.Select(r => r.GetRentalLine()));
+
+    private string Header() => "Rental Record for " + Name + "\n";
+
+    private string Footer()
     {
-        var statementBuilder = new StringBuilder().Append("Rental Record for " + Name + "\n");
-
-        var frequentRenterPoints = _rentals.Sum(rental => rental.CalculateFrequentPoints());
-
-        _rentals.ForEach(x => statementBuilder.Append(x.GetRentalLine()));
-
+        var totalPoints = _rentals.Sum(rental => rental.CalculateFrequentPoints());
         var totalAmount = _rentals.Sum(rental => rental.CalculateAmount());
 
-        AddFooterLines(frequentRenterPoints, totalAmount, statementBuilder);
-
-        return statementBuilder.ToString();
-    }
-
-    private static void AddFooterLines(int frequentRenterPoints, decimal totalAmount, StringBuilder statementBuilder)
-    {
-        statementBuilder.Append(GetAmountOwedStatement(totalAmount));
-        statementBuilder.Append(GetFrequentRenterPointsLine(frequentRenterPoints));
+        return GetAmountOwedStatement(totalAmount)
+             + GetFrequentRenterPointsLine(totalPoints);
     }
 
     private static string GetFrequentRenterPointsLine(int frequentRenterPoints) =>
