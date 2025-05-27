@@ -24,18 +24,17 @@ namespace Victor.Training.Cleancode
             Dictionary<long, double> initialPrices = ResolveInitialPrices(thirdPartyPricesApi, internalPrices, products);
 
             // apply coupons to determine the final prices
-            (Dictionary<long, double> finalPrices, List<Coupon> usedCoupons) =
-                ApplyCouponse(customer, products, initialPrices);
+            var result = ApplyCouponse(customer, products, initialPrices);
 
-            couponRepo.MarkUsedCoupons(customerId, usedCoupons); // INSERT
-            return finalPrices;
+            couponRepo.MarkUsedCoupons(customerId, result.UsedCoupons); // INSERT
+            return result.FinalPrices;
         }
         // TODO perhaps a record
         record class PriceCalculationResult(
-            Dictionary<long, double> finalPrices,
-            List<Coupon> usedCoupons);
+            Dictionary<long, double> FinalPrices,
+            List<Coupon> UsedCoupons);
 
-        private static (Dictionary<long, double> finalPrices, List<Coupon> usedCoupons) ApplyCouponse(
+        private static PriceCalculationResult ApplyCouponse(
             Customer customer,
             List<Product> products,
             Dictionary<long, double> initialPrices)
@@ -55,7 +54,7 @@ namespace Victor.Training.Cleancode
                 }
                 finalPrices[product.Id] = price;
             }
-            return (finalPrices, usedCoupons);
+            return new PriceCalculationResult(finalPrices, usedCoupons);
         }
 
         private static Dictionary<long, double> ResolveInitialPrices(IThirdPartyPricesApi thirdPartyPricesApi, Dictionary<long, double> internalPrices, List<Product> products)
