@@ -1,6 +1,4 @@
-﻿using System;
-using System.Globalization;
-using System.Collections.Generic;
+﻿using System.Globalization;
 
 namespace Victor.Training.Cleancode.VideoStore
 {
@@ -85,6 +83,7 @@ namespace Victor.Training.Cleancode.VideoStore
             result += "You earned " + frequentRenterPoints.ToString() + " frequent renter points\n";
 
             return result;
+
         }
 
     }
