@@ -1,5 +1,4 @@
-﻿using System;
-namespace clean_code_cs
+﻿namespace clean_code_cs
 {
 
     public class SomeController
