@@ -11,75 +11,63 @@ namespace Victor.Training.Cleancode.VideoStore
 
     public record Movie(string Title, PriceCode PriceCode);
 
-    public class Rental
+    public record Rental(Movie Movie, int DaysRented)
     {
-        private bool TwoDayNewReleaseRental => Movie.PriceCode == PriceCode.NewRelease && DaysRented > 1;
+        private bool EligibleForBonus => Movie.PriceCode == PriceCode.NewRelease && DaysRented >= 2;
 
-        public Movie Movie { get; }
-        public int DaysRented { get; }
-
-        public int FrequentRenterPointsToAdd => TwoDayNewReleaseRental ? 2 : 1;
-
-        public Rental(Movie movie, int daysRented)
-        {
-            Movie = movie;
-            DaysRented = daysRented;
-        }
+        public int FrequentRenterPoints => EligibleForBonus ? 2 : 1;
 
         public decimal DetermineRentalAmount()
+        {
+            return Movie.PriceCode switch
+            {
+                PriceCode.Regular => DetermineRegularAmount(),
+                PriceCode.NewRelease => DetermineNewReleaseAmount(),
+                PriceCode.Children => DetermineChildrenAmount(),
+                _ => throw new ArgumentOutOfRangeException(nameof(Movie.PriceCode)),
+            };
+        }
+
+        private decimal DetermineChildrenAmount()
+        {
+            const decimal BasePrice = 1.5m;
+            const int ExtraDaysThreshold = 3;
+            const decimal ExtraDailyRate = 1.5m;
+            
+            decimal rentalAmount = BasePrice;
+            if (DaysRented > ExtraDaysThreshold)
+            {
+                rentalAmount += (DaysRented - ExtraDaysThreshold) * ExtraDailyRate;
+            }
+
+            return rentalAmount;
+        }
+
+        private decimal DetermineNewReleaseAmount()
+        {
+            const int NewReleaseDailyRate = 3;
+            return DaysRented * NewReleaseDailyRate;
+        }
+
+        private decimal DetermineRegularAmount()
         {
             const decimal RegularPriceBase = 2;
             const decimal RegularPriceExtraDailyRate = 1.5m;
             const int RegularPriceExtraDaysThreshold = 2;
 
-            const int NewReleaseDailyRate = 3;
-
-            const decimal ChildrensPriceBase = 1.5m;
-            const decimal ChildrensPriceExtraDailyRate = 1.5m;
-            const int ChildrensPriceExtraDaysThreshold = 3;
-
-            var rentalAmount = 0m;
-
-            switch (Movie.PriceCode)
+            decimal rentalAmount = RegularPriceBase;
+            if (DaysRented > RegularPriceExtraDaysThreshold)
             {
-                case PriceCode.Regular:
-                    rentalAmount += RegularPriceBase;
-                    if (DaysRented > RegularPriceExtraDaysThreshold)
-                    {
-                        rentalAmount += (DaysRented - RegularPriceExtraDaysThreshold) * RegularPriceExtraDailyRate;
-                    }
-
-                    break;
-                case PriceCode.NewRelease:
-                    rentalAmount += DaysRented * NewReleaseDailyRate;
-
-                    break;
-                case PriceCode.Children:
-                    rentalAmount += ChildrensPriceBase;
-                    if (DaysRented > ChildrensPriceExtraDaysThreshold)
-                    {
-                        rentalAmount += (DaysRented - ChildrensPriceExtraDaysThreshold) * ChildrensPriceExtraDailyRate;
-                    }
-
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(Movie.PriceCode));
+                rentalAmount += (DaysRented - RegularPriceExtraDaysThreshold) * RegularPriceExtraDailyRate;
             }
 
             return rentalAmount;
         }
     }
 
-    public class Customer
+    public record Customer(string Name)
     {
         private readonly List<Rental> _rentals = new();
-
-        public string Name { get; }
-
-        public Customer(string name)
-        {
-            Name = name;
-        }
 
         public void AddRental(Movie movie, int daysRented)
         {
@@ -92,11 +80,12 @@ namespace Victor.Training.Cleancode.VideoStore
             var totalAmount = 0m;
             var result = $"Rental Record for {Name}\n";
 
+            // split this for in 3 SRP. then use LINQ Tip:string.Concat
             foreach (var rental in _rentals)
             {
                 var rentalAmount = rental.DetermineRentalAmount();
 
-                frequentRenterPoints += rental.FrequentRenterPointsToAdd;
+                frequentRenterPoints += rental.FrequentRenterPoints;
 
                 result += $"\t{rental.Movie.Title}\t{rentalAmount.ToString("0.0", CultureInfo.InvariantCulture)}\n";
 
