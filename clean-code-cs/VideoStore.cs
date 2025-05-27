@@ -1,6 +1,4 @@
-﻿using System;
-using System.Globalization;
-using System.Collections.Generic;
+﻿using System.Globalization;
 using static Victor.Training.Cleancode.VideoStore.Customer;
 
 namespace Victor.Training.Cleancode.VideoStore
@@ -8,7 +6,7 @@ namespace Victor.Training.Cleancode.VideoStore
     public class Movie
     {
         public MovieType MovieType { get; set; }
-        public virtual string Title { get; }
+        public string Title { get; }
 
         public Movie(string title, MovieType movieType)
         {
@@ -31,6 +29,33 @@ namespace Victor.Training.Cleancode.VideoStore
         public record Rental(Movie Movie, int NumberOfDays)
         {
             public bool IsEligibleForBonus => Movie.MovieType == MovieType.NewRelease && NumberOfDays > 1;
+            public decimal Amount()
+            {
+                var amount = 0m;
+                switch (Movie.MovieType)
+                {
+                    case MovieType.Regular:
+                        amount += 2;
+                        if (NumberOfDays > 2)
+                        {
+                            amount += (NumberOfDays - 2) * 1.5m;
+                        }
+                        break;
+                    case MovieType.NewRelease:
+                        amount += NumberOfDays * 3;
+                        break;
+                    case MovieType.Children:
+                        amount += 1.5m;
+                        if (NumberOfDays > 3)
+                        {
+                            amount += (NumberOfDays - 3) * 1.5m;
+                        }
+                        break;
+                }
+
+                return amount;
+            }
+
         }
 
         public void AddRental(Movie movie, int numberOfDays)
@@ -40,15 +65,11 @@ namespace Victor.Training.Cleancode.VideoStore
 
         public string Statement()
         {
-            var totalAmount = 0m;
-            var result = "Rental Record for " + Name + "\n";
-            foreach (var rental in _rentals)
-            {
-                //dtermines the amount for each line
-                var rentalAmount = CalculateAmount(rental);
+            var totalAmount = CalculateTotalAmount();
 
-                result += "\t" + rental.Movie.Title + "\t" + rentalAmount.ToString("0.0", CultureInfo.InvariantCulture) + "\n";
-                totalAmount += rentalAmount;
+            var result = "Rental Record for " + Name + "\n";
+            foreach (var rental in _rentals) { 
+                result += "\t" + rental.Movie.Title + "\t" + rental.Amount().ToString("0.0", CultureInfo.InvariantCulture) + "\n";
             }
 
             // add footer lines
@@ -58,31 +79,17 @@ namespace Victor.Training.Cleancode.VideoStore
             return result;
         }
 
-        private static decimal CalculateAmount(Rental rental)
+        private decimal CalculateTotalAmount()
         {
-            var amount = 0m;
-            switch (rental.Movie.MovieType)
+            var totalAmount = 0m;
+            foreach (var rental in _rentals)
             {
-                case MovieType.Regular:
-                    amount += 2;
-                    if (rental.NumberOfDays > 2)
-                    {
-                        amount += (rental.NumberOfDays - 2) * 1.5m;
-                    }
-                    break;
-                case MovieType.NewRelease:
-                    amount += rental.NumberOfDays * 3;
-                    break;
-                case MovieType.Children:
-                    amount += 1.5m;
-                    if (rental.NumberOfDays > 3)
-                    {
-                        amount += (rental.NumberOfDays - 3) * 1.5m;
-                    }
-                    break;
-            }
+                //dtermines the amount for each line
+                var rentalAmount = rental.Amount();
 
-            return amount;
+                totalAmount += rentalAmount;
+            }
+            return totalAmount;
         }
     }
 }
