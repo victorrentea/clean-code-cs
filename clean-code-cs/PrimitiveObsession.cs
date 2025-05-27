@@ -4,6 +4,7 @@ using System.Linq;
 
 namespace Victor.Training.Cleancode
 {
+    //test push
     public enum PaymentMethod
     {
         CARD,
