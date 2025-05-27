@@ -10,12 +10,9 @@ namespace Victor.Training.Cleancode.VideoStore
     public class Customer
     {
         private readonly List<(Movie,int)> _rentals = new();
-        public string Name { get; }
+        private string Name { get; }
 
-        public Customer(string name)
-        {
-            Name = name;
-        }
+        public Customer(string name) => Name = name;
 
         public void AddRental(Movie movie, int d)
         {
@@ -29,39 +26,17 @@ namespace Victor.Training.Cleancode.VideoStore
             var statementBuilder = new StringBuilder().Append("Rental Record for " + Name + "\n");
             foreach (var rental in _rentals)
             {
-                var thisAmount = 0m;
-                var dr = rental.Item2;
-                //dtermines the amount for each line
-                switch (rental.Item1.PriceCode)
-                {
-                    case PriceCode.Regular:
-                        thisAmount += 2;
-                        if (dr > 2)
-                        {
-                            thisAmount += (dr - 2) * 1.5m;
-                        }
-                        break;
-                    case PriceCode.NewRelease:
-                        thisAmount += dr * 3;
-                        break;
-                    case PriceCode.Childrens:
-                        thisAmount += 1.5m;
-                        if (dr > 3)
-                        {
-                            thisAmount += (dr - 3) * 1.5m;
-                        }
-                        break;
-                }
+                var thisAmount = CalculateAmount(rental.Item1, rental.Item2);
 
                 frequentRenterPoints++;
 
                 // add bonus for a two day new release rental
-                if (IsBonusEligibleRental(rental, dr))
+                if (IsBonusEligibleRental(rental.Item1, rental.Item2))
                 {
                     frequentRenterPoints++;
                 }
 
-                statementBuilder.Append(GetRentalLine(rental, thisAmount));
+                statementBuilder.Append(GetRentalLine(rental.Item1, thisAmount));
                 totalAmount += thisAmount;
             }
 
@@ -73,14 +48,68 @@ namespace Victor.Training.Cleancode.VideoStore
 
         }
 
-        private static bool IsBonusEligibleRental((Movie, int) each, int dr)
+        private static decimal CalculateAmount(Movie movie, int dr)
         {
-            return each.Item1.PriceCode == PriceCode.NewRelease && dr > 1;
+            var thisAmount = 0m;
+
+            //determines the amount for each line
+            switch (movie.PriceCode)
+            {
+                case PriceCode.Regular:
+                    thisAmount = CalculateRegularAmount(thisAmount, dr);
+                    break;
+                case PriceCode.NewRelease:
+                    thisAmount = CalculateNewReleaseAmount(thisAmount, dr);
+                    break;
+                case PriceCode.Childrens:
+                    thisAmount = CalculateChildrensAmount(thisAmount, dr);
+                    break;
+            }
+
+            return thisAmount;
         }
 
-        private static string GetRentalLine((Movie, int) each, decimal thisAmount)
+        private static decimal CalculateChildrensAmount(decimal thisAmount, int dr)
         {
-            return "\t" + each.Item1.Title + "\t" + thisAmount.ToString("0.0", CultureInfo.InvariantCulture) + "\n";
+            thisAmount += 1.5m;
+            thisAmount = ExtraAmount(thisAmount, dr, 3);
+
+            return thisAmount;
+        }
+
+        private static decimal ExtraAmount(decimal thisAmount, int dr, int limit)
+        {
+            if (dr > limit)
+            {
+                thisAmount += (dr - limit) * 1.5m;
+            }
+
+            return thisAmount;
+        }
+
+        private static decimal CalculateRegularAmount(decimal thisAmount, int dr)
+        {
+            thisAmount += 2;
+            thisAmount = ExtraAmount(thisAmount, dr, 2);
+
+            return thisAmount;
+        }
+
+        private static decimal CalculateNewReleaseAmount(decimal thisAmount, int dr)
+        {
+            thisAmount += dr * 3;
+            return thisAmount;
+        }
+
+
+        private static bool IsBonusEligibleRental(Movie movie, int dr)
+        {
+            return movie.PriceCode == PriceCode.NewRelease && dr > 1;
+        }
+
+        private static string GetRentalLine(Movie movie, decimal thisAmount)
+        {
+            return $"\t{movie.Title}\t{thisAmount.ToString("0.0", CultureInfo.InvariantCulture)}\n";
         }
 
         private static string GetFrequentRenterPointsLine(int frequentRenterPoints)
@@ -90,7 +119,7 @@ namespace Victor.Training.Cleancode.VideoStore
 
         private static string GetAmountOwedStatement(decimal totalAmount)
         {
-            return "Amount owed is " + totalAmount.ToString("0.0", CultureInfo.InvariantCulture) + "\n";
+            return $"Amount owed is {totalAmount.ToString("0.0", CultureInfo.InvariantCulture)}\n";
         }
     }
 }
