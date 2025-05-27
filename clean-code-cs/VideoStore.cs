@@ -1,25 +1,11 @@
-﻿using System.Diagnostics.Metrics;
+﻿using clean_code_cs;
+using System.Diagnostics.Metrics;
 using System.Globalization;
 using System.Text;
 
 namespace Victor.Training.Cleancode.VideoStore
 {
-
-    public class Movie
-    {
-        public const int REGULAR = 0;
-        public const int NEW_RELEASE = 1;
-        public const int CHILDRENS = 2;
-
-        public int PriceCode { get; set; }
-        public virtual string Title { get; }
-
-        public Movie(string title, int priceCode)
-        {
-            Title = title;
-            PriceCode = priceCode;
-        }
-    }  
+    public record Movie(string Title, PriceCode PriceCode);
 
     public class Customer
     {
@@ -48,17 +34,17 @@ namespace Victor.Training.Cleancode.VideoStore
                 //dtermines the amount for each line
                 switch (rental.Item1.PriceCode)
                 {
-                    case Movie.REGULAR:
+                    case PriceCode.Regular:
                         thisAmount += 2;
                         if (dr > 2)
                         {
                             thisAmount += (dr - 2) * 1.5m;
                         }
                         break;
-                    case Movie.NEW_RELEASE:
+                    case PriceCode.NewRelease:
                         thisAmount += dr * 3;
                         break;
-                    case Movie.CHILDRENS:
+                    case PriceCode.Childrens:
                         thisAmount += 1.5m;
                         if (dr > 3)
                         {
@@ -89,7 +75,7 @@ namespace Victor.Training.Cleancode.VideoStore
 
         private static bool IsBonusEligibleRental((Movie, int) each, int dr)
         {
-            return each.Item1.PriceCode == Movie.NEW_RELEASE && dr > 1;
+            return each.Item1.PriceCode == PriceCode.NewRelease && dr > 1;
         }
 
         private static string GetRentalLine((Movie, int) each, decimal thisAmount)
@@ -99,7 +85,7 @@ namespace Victor.Training.Cleancode.VideoStore
 
         private static string GetFrequentRenterPointsLine(int frequentRenterPoints)
         {            
-            return $"You earned {frequentRenterPoints} frequestn renter points\n";                
+            return $"You earned {frequentRenterPoints} frequent renter points\n";                
         }
 
         private static string GetAmountOwedStatement(decimal totalAmount)

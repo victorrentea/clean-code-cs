@@ -1,6 +1,7 @@
 ﻿using System;
 using Victor.Training.Cleancode.VideoStore;
 using NUnit.Framework;
+using clean_code_cs;
 
 namespace Victor.Training.Cleancode.VideoStore.Tests
 {
@@ -13,10 +14,10 @@ namespace Victor.Training.Cleancode.VideoStore.Tests
         public void CharacterizationTest()
         {
             var customer = new Customer("John Doe");
-            customer.AddRental(new Movie("Star Wars", Movie.NEW_RELEASE), 6);
-            customer.AddRental(new Movie("Sofia", Movie.CHILDRENS), 7);
-            customer.AddRental(new Movie("Inception", Movie.REGULAR), 5);
-            customer.AddRental(new Movie("Wicked", Movie.CHILDRENS), 3);
+            customer.AddRental(new Movie("Star Wars", PriceCode.NewRelease), 6);
+            customer.AddRental(new Movie("Sofia", PriceCode.Childrens), 7);
+            customer.AddRental(new Movie("Inception", PriceCode.Regular), 5);
+            customer.AddRental(new Movie("Wicked", PriceCode.Childrens), 3);
 
             var expected =
                 "Rental Record for John Doe\n" +
