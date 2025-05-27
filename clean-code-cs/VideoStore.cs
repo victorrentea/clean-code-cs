@@ -4,7 +4,7 @@ namespace Victor.Training.Cleancode.VideoStore
 {
     public record Customer (string Name)
     {
-        private readonly List<Rental> _rentals = [];
+        private readonly List<Rental> _rentals = new();
         private int FrequentRenterPoints => _rentals.Count + _rentals.Count(x => x.IsEligibleForBonus);
         private decimal TotalAmount => _rentals.Sum(rental => rental.Amount);
         private string Body => string.Concat(_rentals.Select(GetBodyLine));
@@ -16,6 +16,7 @@ namespace Victor.Training.Cleancode.VideoStore
 
         public string GetStatement()
         {
+            // return header + body + footer;
             var result = "Rental Record for " + Name + "\n";
 
             result += Body;
