@@ -1,92 +1,89 @@
 ﻿using System;
 using System.Globalization;
 using System.Collections.Generic;
+using static Victor.Training.Cleancode.VideoStore.Customer;
 
 namespace Victor.Training.Cleancode.VideoStore
 {
-
     public class Movie
     {
-        public const int REGULAR = 0;
-        public const int NEW_RELEASE = 1;
-        public const int CHILDRENS = 2;
-
-        public int PriceCode { get; set; }
+        public MovieType MovieType { get; set; }
         public virtual string Title { get; }
 
-        public Movie(string title, int priceCode)
+        public Movie(string title, MovieType movieType)
         {
             Title = title;
-            PriceCode = priceCode;
+            MovieType = movieType;
         }
-    }  
+    }
 
     public class Customer
     {
-        private readonly List<(Movie,int)> _rentals = new();
+        private readonly List<Rental> _rentals = new();
         public string Name { get; }
+        public int FrequentRenterPoints => _rentals.Count + _rentals.Where(x => x.IsEligibleForBonus).Count();
 
         public Customer(string name)
         {
             Name = name;
         }
 
-        public void AddRental(Movie movie, int d)
+        public record Rental(Movie Movie, int NumberOfDays)
         {
-            _rentals.Add((movie, d));
+            public bool IsEligibleForBonus => Movie.MovieType == MovieType.NewRelease && NumberOfDays > 1;
+        }
+
+        public void AddRental(Movie movie, int numberOfDays)
+        {
+            _rentals.Add(new Rental(movie, numberOfDays));
         }
 
         public string Statement()
         {
-            var frequentRenterPoints = 0;
             var totalAmount = 0m;
             var result = "Rental Record for " + Name + "\n";
-            foreach (var each in _rentals)
+            foreach (var rental in _rentals)
             {
-                var thisAmount = 0m;
-                var dr = each.Item2;
                 //dtermines the amount for each line
-                switch (each.Item1.PriceCode)
-                {
-                    case Movie.REGULAR:
-                        thisAmount += 2;
-                        if (dr > 2)
-                        {
-                            thisAmount += (dr - 2) * 1.5m;
-                        }
-                        break;
-                    case Movie.NEW_RELEASE:
-                        thisAmount += dr * 3;
-                        break;
-                    case Movie.CHILDRENS:
-                        thisAmount += 1.5m;
-                        if (dr > 3)
-                        {
-                            thisAmount += (dr - 3) * 1.5m;
-                        }
-                        break;
-                }
+                var rentalAmount = CalculateAmount(rental);
 
-                frequentRenterPoints++;
-
-                // add bonus for a two day new release rental
-                if (each.Item1.PriceCode == Movie.NEW_RELEASE
-                    && dr > 1)
-                {
-                    frequentRenterPoints++;
-                }
-
-                result += "\t" + each.Item1.Title + "\t" + thisAmount.ToString("0.0", CultureInfo.InvariantCulture) + "\n";
-                totalAmount += thisAmount;
+                result += "\t" + rental.Movie.Title + "\t" + rentalAmount.ToString("0.0", CultureInfo.InvariantCulture) + "\n";
+                totalAmount += rentalAmount;
             }
 
             // add footer lines
             result += "Amount owed is " + totalAmount.ToString("0.0", CultureInfo.InvariantCulture) + "\n";
-            result += "You earned " + frequentRenterPoints.ToString() + " frequent renter points\n";
+            result += "You earned " + FrequentRenterPoints.ToString() + " frequent renter points\n";
 
             return result;
         }
 
+        private static decimal CalculateAmount(Rental rental)
+        {
+            var amount = 0m;
+            switch (rental.Movie.MovieType)
+            {
+                case MovieType.Regular:
+                    amount += 2;
+                    if (rental.NumberOfDays > 2)
+                    {
+                        amount += (rental.NumberOfDays - 2) * 1.5m;
+                    }
+                    break;
+                case MovieType.NewRelease:
+                    amount += rental.NumberOfDays * 3;
+                    break;
+                case MovieType.Children:
+                    amount += 1.5m;
+                    if (rental.NumberOfDays > 3)
+                    {
+                        amount += (rental.NumberOfDays - 3) * 1.5m;
+                    }
+                    break;
+            }
+
+            return amount;
+        }
     }
 }
 
