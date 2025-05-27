@@ -11,8 +11,15 @@ namespace Victor.Training.Cleancode.VideoStore
 
     public record Movie(string Title, PriceCode PriceCode);
 
-    public record Rental(Movie Movie, int DaysRented)
+    public class Rental
     {
+        public Movie Movie { get; }
+        public int DaysRented { get; }
+        public Rental(Movie movie, int daysRented)
+        {
+            Movie = movie;
+            DaysRented = daysRented;
+        }
         private bool EligibleForBonus => Movie.PriceCode == PriceCode.NewRelease && DaysRented >= 2;
 
         public int FrequentRenterPoints => EligibleForBonus ? 2 : 1;
@@ -78,19 +85,14 @@ namespace Victor.Training.Cleancode.VideoStore
         {
             var frequentRenterPoints = 0;
             var totalAmount = 0m;
-            var result = $"Rental Record for {Name}\n";
+            string result = $"Rental Record for {Name}\n";
 
-            // split this for in 3 SRP. then use LINQ Tip:string.Concat
-            foreach (var rental in _rentals)
-            {
-                var rentalAmount = rental.DetermineRentalAmount();
+            totalAmount = _rentals.Sum(rental => rental.DetermineRentalAmount());
+ 
+            frequentRenterPoints = _rentals.Sum(rental => rental.FrequentRenterPoints);
 
-                frequentRenterPoints += rental.FrequentRenterPoints;
-
-                result += $"\t{rental.Movie.Title}\t{rentalAmount.ToString("0.0", CultureInfo.InvariantCulture)}\n";
-
-                totalAmount += rentalAmount;
-            }
+            result += String.Concat(_rentals.Select(rental =>
+                    $"\t{rental.Movie.Title}\t{rental.DetermineRentalAmount().ToString("0.0", CultureInfo.InvariantCulture)}\n"));
 
             // add footer lines
             result += $"Amount owed is {totalAmount.ToString("0.0", CultureInfo.InvariantCulture)}\n";
