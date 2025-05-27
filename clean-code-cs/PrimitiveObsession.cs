@@ -4,14 +4,24 @@ using System.Linq;
 
 namespace Victor.Training.Cleancode
 {
+    public enum PaymentMethod
+    {
+        CARD,
+        CASH,
+        BLOOD,
+        SHEEP,
+        COUPONS
+    }
     public class PrimitiveObsession
     {
         public static void Main(string[] args)
         {
-            new PrimitiveObsession().HandlePrimitiveObsession("CARD");
+            new PrimitiveObsession().HandlePrimitiveObsession(PaymentMethod.CARD);
         }
 
-        public Dictionary<long, Dictionary<string, int>> FetchData(string paymentMethod)
+
+        //public Dictionary<CustomerId, Dictionary<ProductName, Quantity>>
+        public Dictionary<long, Dictionary<string, int>> FetchData(PaymentMethod paymentMethod)
         {
             long customerId = 1L;
             int product1Count = 2;
@@ -27,17 +37,24 @@ namespace Victor.Training.Cleancode
             };
         }
 
+        //microtypes for VERY CRITICAL IDS: SSN, IBAN, Email, SWIFT, VATCode, OrderId
+        public record CustomerId(long Value);
+        public record ProductName(string Value);
+        public record Quantity(int Value);
 
-        public void HandlePrimitiveObsession(string paymentMethod)
+
+        public void HandlePrimitiveObsession(PaymentMethod paymentMethod)
         {
-            if (paymentMethod != "CARD" && paymentMethod != "CASH")
-            {
-                throw new ArgumentException("Only CARD payment method is supported");
-            }
+            //if (paymentMethod != PaymentMethod.CARD && paymentMethod != PaymentMethod.CASH && paymentMethod!=PaymentMethod.SHEEP)
+            //if (! (paymentMethod is PaymentMethod.CARD or PaymentMethod.CASH or PaymentMethod.SHEEP))
+            var supportedPaymentMethods = new HashSet<PaymentMethod> { PaymentMethod.CARD, PaymentMethod.CASH, PaymentMethod.SHEEP };
+            if (!supportedPaymentMethods.Contains(paymentMethod))
+                throw new ArgumentException($"{paymentMethod} not supported");
 
-            var map = FetchData(paymentMethod);
+            // use 
+            var customerProductCounts = FetchData(paymentMethod);
 
-            foreach (var e in map)
+            foreach (var e in customerProductCounts)
             {
                 string pl = string.Join(", ", e.Value.Select(entry => $"{entry.Value} pcs. of {entry.Key}"));
                 Console.WriteLine($"cid={e.Key} got {pl}");

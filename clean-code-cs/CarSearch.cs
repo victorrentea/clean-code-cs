@@ -6,9 +6,7 @@
         public List<CarModel> FilterCarModels(CarSearchCriteria criteria, List<CarModel> carModels)
         {
             List<CarModel> results = carModels
-                .Where(carModel => new YearRange(criteria.StartYear, criteria.EndYear)
-                    .Intersects(
-                        new YearRange(carModel.StartYear, carModel.EndYear)))
+                .Where(carModel => criteria.YearRange.Intersects(carModel.YearRange))
                 .ToList();
             Console.WriteLine("Imagine more filtering logic ...");
             return results;
@@ -57,11 +55,15 @@
         //}
     }
 
-    public class CarSearchCriteria // a DTO received from JSON
+    public class CarSearchCriteria // a DTO received from JSON = part of your REST API
     {
-        public int StartYear { get; }
-        public int EndYear { get; }
+        public int StartYear { get; } // rem
+        public int EndYear { get; } // rem
+        
         public string Make { get; }
+
+        //"autoproperty": public YearRange yearRange; // good to reuse the VO; BAD: breaks your API 
+        public YearRange YearRange => new YearRange(StartYear, EndYear);
 
         public CarSearchCriteria(int startYear, int endYear, string make)
         {
@@ -72,13 +74,23 @@
         }
     }
 
-    public class CarModel // Domain Model
+    //static class YearRangeValidator { .......}
+
+    public class CarModel
     {
+        //public CarModel? Id { get; private set; }
         public long? Id { get; private set; }
         public string Make { get; private set; }
         public string Model { get; private set; }
-        public int StartYear { get; private set; }
-        public int EndYear { get; private set; }
+
+        public int StartYear { get; private set; } // REM
+        public int EndYear { get; private set; }// REM
+
+        // if this is my internal "Domain Model"
+        // = structures used in the most complex parts of code,
+        //    kept internal, never exposed to the outside world,
+        // then consider replacing the 2 properties above with a single one YearRange.
+        public YearRange YearRange => new YearRange(StartYear, EndYear);
 
         public CarModel(string make, string model, int startYear, int endYear)
         {

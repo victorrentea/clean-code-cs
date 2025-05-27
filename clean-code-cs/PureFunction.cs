@@ -1,51 +1,62 @@
 ﻿using System;
 namespace Victor.Training.Cleancode
 {
-    public class PureFunction
+    public class PureFunction(
+        /*readonly*/ ICustomerRepo customerRepo,
+        IThirdPartyPricesApi thirdPartyPricesApi,
+        ICouponRepo couponRepo,
+        IProductRepo productRepo)
     {
-        private readonly ICustomerRepo customerRepo;
-        private readonly IThirdPartyPricesApi thirdPartyPricesApi;
-        private readonly ICouponRepo couponRepo;
-        private readonly IProductRepo productRepo;
-
-        public PureFunction(ICustomerRepo customerRepo, IThirdPartyPricesApi thirdPartyPricesApi, ICouponRepo couponRepo, IProductRepo productRepo)
+        
+        // TODO extract most complexity into a pure function:
+        //  to have clear the inputs
+        //  to be testable without mocks
+        public Dictionary<long, double> ComputePrices(
+            long customerId,
+            List<long> productIds,
+            Dictionary<long, double> internalPrices)
         {
-            this.customerRepo = customerRepo;
-            this.thirdPartyPricesApi = thirdPartyPricesApi;
-            this.couponRepo = couponRepo;
-            this.productRepo = productRepo;
-        }
-
-        // TODO extract complexity into a pure function
-        public Dictionary<long, double> ComputePrices(long customerId, List<long> productIds, Dictionary<long, double> internalPrices)
-        {
-            Customer customer = customerRepo.FindById(customerId);
-            List<Product> products = productRepo.FindAllById(productIds);
+            Customer customer = customerRepo.FindById(customerId); // SELECT will throw if null Customer comes back if you enable null check per project
+            List<Product> products = productRepo.FindAllById(productIds); // SELECT .. WHERE ID IN (?,?..?)
 
             List<Coupon> usedCoupons = new();
             Dictionary<long, double> finalPrices = new();
+            Dictionary<long, double> initialPrices = new();
             foreach (Product product in products)
             {
+                // resolve the initial price
                 double? price = internalPrices.ContainsKey(product.Id) ? internalPrices[product.Id] : null;
                 if (price == null)
                 {
-                    price = thirdPartyPricesApi.FetchPrice(product.Id);
+                    price = thirdPartyPricesApi.FetchPrice(product.Id); // REST API call
                 }
+                initialPrices[product.Id] = (double) price; // TODO ask biz: what if not found in either internalPrices nor thirdPartyApi
+            }
+
+            foreach (Product product in products)
+            {
+                var price =initialPrices[product.Id];
+                // apply coupons to determine the final price
                 foreach (Coupon coupon in customer.Coupons)
                 {
                     if (coupon.AutoApply && coupon.IsApplicableFor(product) && !usedCoupons.Contains(coupon))
                     {
-                        price = coupon.Apply(product, price.Value);
+                        price = coupon.Apply(product, price);
                         usedCoupons.Add(coupon);
                     }
                 }
-                finalPrices[product.Id] = price.Value;
+                finalPrices[product.Id] = price;
             }
 
-            couponRepo.MarkUsedCoupons(customerId, usedCoupons);
+            couponRepo.MarkUsedCoupons(customerId, usedCoupons); // INSERT
             return finalPrices;
         }
     }
+
+
+
+
+
     public interface ICouponRepo
     {
         void MarkUsedCoupons(long customerId, List<Coupon> usedCoupons);
@@ -53,7 +64,7 @@ namespace Victor.Training.Cleancode
     public record Customer(List<Coupon> Coupons);
     public interface ICustomerRepo
     {
-        Customer FindById(long customerId);
+        Customer? FindById(long customerId);
         int CountByEmail(string email);
         long Save(Customer customer);
     }
