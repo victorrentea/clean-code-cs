@@ -1,5 +1,4 @@
 ﻿using clean_code_cs;
-using System.Diagnostics.Metrics;
 using System.Globalization;
 using System.Text;
 
@@ -12,8 +11,7 @@ namespace Victor.Training.Cleancode.VideoStore
         public bool IsBonusEligible => Movie.PriceCode == PriceCode.NewRelease && DaysOfRental > 1;
 
         public decimal CalculateAmount()
-        {
-            //determines the amount for each line
+        {            
             return Movie.PriceCode switch
             {
                 PriceCode.Regular => CalculateRegularAmount(),
@@ -23,10 +21,7 @@ namespace Victor.Training.Cleancode.VideoStore
             };
         }
 
-        private decimal CalculateChildrensAmount()
-        {
-            return ExtraAmount(3) + 1.5m;
-        }
+        private decimal CalculateChildrensAmount() => ExtraAmount(3) + 1.5m;
 
         private decimal ExtraAmount(int limit)
         {
@@ -39,15 +34,9 @@ namespace Victor.Training.Cleancode.VideoStore
             return thisAmount;
         }
 
-        private decimal CalculateRegularAmount()
-        {
-            return ExtraAmount(2) + 2;
-        }
+        private decimal CalculateRegularAmount() => ExtraAmount(2) + 2;
 
-        private decimal CalculateNewReleaseAmount()
-        {
-            return DaysOfRental * 3;
-        }
+        private decimal CalculateNewReleaseAmount() => DaysOfRental * 3;
     }
 
     public class Customer
@@ -85,7 +74,6 @@ namespace Victor.Training.Cleancode.VideoStore
             AddFooterLines(frequentRenterPoints, totalAmount, statementBuilder);
 
             return statementBuilder.ToString();
-
         }
 
         private static void AddFooterLines(int frequentRenterPoints, decimal totalAmount, StringBuilder statementBuilder)
@@ -94,20 +82,13 @@ namespace Victor.Training.Cleancode.VideoStore
             statementBuilder.Append(GetFrequentRenterPointsLine(frequentRenterPoints));
         }
 
-        private static string GetRentalLine(Movie movie, decimal thisAmount)
-        {
-            return $"\t{movie.Title}\t{thisAmount.ToString("0.0", CultureInfo.InvariantCulture)}\n";
-        }
+        private static string GetRentalLine(Movie movie, decimal thisAmount) =>
+            $"\t{movie.Title}\t{thisAmount.ToString("0.0", CultureInfo.InvariantCulture)}\n";
 
-        private static string GetFrequentRenterPointsLine(int frequentRenterPoints)
-        {            
-            return $"You earned {frequentRenterPoints} frequent renter points\n";                
-        }
+        private static string GetFrequentRenterPointsLine(int frequentRenterPoints) =>
+            $"You earned {frequentRenterPoints} frequent renter points\n";
 
-        private static string GetAmountOwedStatement(decimal totalAmount)
-        {
-            return $"Amount owed is {totalAmount.ToString("0.0", CultureInfo.InvariantCulture)}\n";
-        }
+        private static string GetAmountOwedStatement(decimal totalAmount) =>
+            $"Amount owed is {totalAmount.ToString("0.0", CultureInfo.InvariantCulture)}\n";
     }
 }
-
