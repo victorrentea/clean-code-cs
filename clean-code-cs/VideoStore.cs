@@ -1,29 +1,19 @@
-﻿using System;
-using System.Globalization;
-using System.Collections.Generic;
+﻿using System.Globalization;
 
 namespace Victor.Training.Cleancode.VideoStore
 {
-
-    public class Movie
+    public enum PriceCode
     {
-        public const int REGULAR = 0;
-        public const int NEW_RELEASE = 1;
-        public const int CHILDRENS = 2;
+        Regular,
+        NewRelease,
+        Childrens
+    }
 
-        public int PriceCode { get; set; }
-        public virtual string Title { get; }
-
-        public Movie(string title, int priceCode)
-        {
-            Title = title;
-            PriceCode = priceCode;
-        }
-    }  
+    public record Movie(string Title, PriceCode PriceCode);
 
     public class Customer
     {
-        private readonly List<(Movie,int)> _rentals = new();
+        private readonly List<(Movie Movie, decimal DaysRented)> _rentals = new();
         public string Name { get; }
 
         public Customer(string name)
@@ -31,38 +21,39 @@ namespace Victor.Training.Cleancode.VideoStore
             Name = name;
         }
 
-        public void AddRental(Movie movie, int d)
+        public void AddRental(Movie movie, int daysRented)
         {
-            _rentals.Add((movie, d));
+            _rentals.Add((movie, daysRented));
         }
 
         public string Statement()
         {
             var frequentRenterPoints = 0;
             var totalAmount = 0m;
-            var result = "Rental Record for " + Name + "\n";
-            foreach (var each in _rentals)
+            var result = $"Rental Record for {Name}\n";
+
+            foreach (var movie in _rentals)
             {
-                var thisAmount = 0m;
-                var dr = each.Item2;
+                var priceAmount = 0m;
+
                 //dtermines the amount for each line
-                switch (each.Item1.PriceCode)
+                switch (movie.Item1.PriceCode)
                 {
-                    case Movie.REGULAR:
-                        thisAmount += 2;
-                        if (dr > 2)
+                    case PriceCode.Regular:
+                        priceAmount += 2;
+                        if (movie.DaysRented > 2)
                         {
-                            thisAmount += (dr - 2) * 1.5m;
+                            priceAmount += (movie.DaysRented - 2) * 1.5m;
                         }
                         break;
-                    case Movie.NEW_RELEASE:
-                        thisAmount += dr * 3;
+                    case PriceCode.NewRelease:
+                        priceAmount += movie.DaysRented * 3;
                         break;
-                    case Movie.CHILDRENS:
-                        thisAmount += 1.5m;
-                        if (dr > 3)
+                    case PriceCode.Childrens:
+                        priceAmount += 1.5m;
+                        if (movie.DaysRented > 3)
                         {
-                            thisAmount += (dr - 3) * 1.5m;
+                            priceAmount += (movie.DaysRented - 3) * 1.5m;
                         }
                         break;
                 }
@@ -70,14 +61,14 @@ namespace Victor.Training.Cleancode.VideoStore
                 frequentRenterPoints++;
 
                 // add bonus for a two day new release rental
-                if (each.Item1.PriceCode == Movie.NEW_RELEASE
-                    && dr > 1)
+                if (movie.Item1.PriceCode == PriceCode.NewRelease
+                    && movie.DaysRented > 1)
                 {
                     frequentRenterPoints++;
                 }
 
-                result += "\t" + each.Item1.Title + "\t" + thisAmount.ToString("0.0", CultureInfo.InvariantCulture) + "\n";
-                totalAmount += thisAmount;
+                result += "\t" + movie.Item1.Title + "\t" + priceAmount.ToString("0.0", CultureInfo.InvariantCulture) + "\n";
+                totalAmount += priceAmount;
             }
 
             // add footer lines
