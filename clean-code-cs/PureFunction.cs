@@ -19,37 +19,59 @@ namespace Victor.Training.Cleancode
             Customer customer = customerRepo.FindById(customerId); // SELECT will throw if null Customer comes back if you enable null check per project
             List<Product> products = productRepo.FindAllById(productIds); // SELECT .. WHERE ID IN (?,?..?)
 
+
+
+            Dictionary<long, double> initialPrices = ResolveInitialPrices(thirdPartyPricesApi, internalPrices, products);
+
+            // apply coupons to determine the final prices
+            (Dictionary<long, double> finalPrices, List<Coupon> usedCoupons) =
+                ApplyCouponse(customer, products, initialPrices);
+
+            couponRepo.MarkUsedCoupons(customerId, usedCoupons); // INSERT
+            return finalPrices;
+        }
+        // TODO perhaps a record
+        record class PriceCalculationResult(
+            Dictionary<long, double> finalPrices,
+            List<Coupon> usedCoupons);
+
+        private static (Dictionary<long, double> finalPrices, List<Coupon> usedCoupons) ApplyCouponse(
+            Customer customer,
+            List<Product> products,
+            Dictionary<long, double> initialPrices)
+        {
             List<Coupon> usedCoupons = new();
             Dictionary<long, double> finalPrices = new();
-            Dictionary<long, double> initialPrices = new();
             foreach (Product product in products)
             {
-                // resolve the initial price
-                double? price = internalPrices.ContainsKey(product.Id) ? internalPrices[product.Id] : null;
-                if (price == null)
-                {
-                    price = thirdPartyPricesApi.FetchPrice(product.Id); // REST API call
-                }
-                initialPrices[product.Id] = (double) price; // TODO ask biz: what if not found in either internalPrices nor thirdPartyApi
-            }
-
-            foreach (Product product in products)
-            {
-                var price =initialPrices[product.Id];
-                // apply coupons to determine the final price
+                var price = initialPrices[product.Id];
                 foreach (Coupon coupon in customer.Coupons)
                 {
                     if (coupon.AutoApply && coupon.IsApplicableFor(product) && !usedCoupons.Contains(coupon))
                     {
                         price = coupon.Apply(product, price);
-                        usedCoupons.Add(coupon);
+                        usedCoupons.Add(coupon);// TODO can we first select coupons to apply in PASS1, and in PASS2 apply them?
                     }
                 }
                 finalPrices[product.Id] = price;
             }
+            return (finalPrices, usedCoupons);
+        }
 
-            couponRepo.MarkUsedCoupons(customerId, usedCoupons); // INSERT
-            return finalPrices;
+        private static Dictionary<long, double> ResolveInitialPrices(IThirdPartyPricesApi thirdPartyPricesApi, Dictionary<long, double> internalPrices, List<Product> products)
+        {
+            Dictionary<long, double> initialPrices = new();
+            foreach (Product product in products)
+            {
+                double? price = internalPrices.ContainsKey(product.Id) ? internalPrices[product.Id] : null;
+                if (price == null)
+                {
+                    price = thirdPartyPricesApi.FetchPrice(product.Id); // REST API call
+                }
+                initialPrices[product.Id] = (double)price; // TODO ask biz: what if not found in either internalPrices nor thirdPartyApi
+            }
+
+            return initialPrices;
         }
     }
 
