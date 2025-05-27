@@ -1,4 +1,6 @@
-﻿using System.Globalization;
+﻿using System.Diagnostics.Metrics;
+using System.Globalization;
+using System.Text;
 
 namespace Victor.Training.Cleancode.VideoStore
 {
@@ -37,14 +39,14 @@ namespace Victor.Training.Cleancode.VideoStore
         public string Statement()
         {
             var frequentRenterPoints = 0;
-            var totalAmount = 0m;
-            var result = "Rental Record for " + Name + "\n";
-            foreach (var each in _rentals)
+            var totalAmount = 0m;            
+            var statementBuilder = new StringBuilder().Append("Rental Record for " + Name + "\n");
+            foreach (var rental in _rentals)
             {
                 var thisAmount = 0m;
-                var dr = each.Item2;
+                var dr = rental.Item2;
                 //dtermines the amount for each line
-                switch (each.Item1.PriceCode)
+                switch (rental.Item1.PriceCode)
                 {
                     case Movie.REGULAR:
                         thisAmount += 2;
@@ -68,24 +70,42 @@ namespace Victor.Training.Cleancode.VideoStore
                 frequentRenterPoints++;
 
                 // add bonus for a two day new release rental
-                if (each.Item1.PriceCode == Movie.NEW_RELEASE
-                    && dr > 1)
+                if (IsBonusEligibleRental(rental, dr))
                 {
                     frequentRenterPoints++;
                 }
 
-                result += "\t" + each.Item1.Title + "\t" + thisAmount.ToString("0.0", CultureInfo.InvariantCulture) + "\n";
+                statementBuilder.Append(GetRentalLine(rental, thisAmount));
                 totalAmount += thisAmount;
             }
 
             // add footer lines
-            result += "Amount owed is " + totalAmount.ToString("0.0", CultureInfo.InvariantCulture) + "\n";
-            result += "You earned " + frequentRenterPoints.ToString() + " frequent renter points\n";
+            statementBuilder.Append(GetAmountOwedStatement(totalAmount));
+            statementBuilder.Append(GetFrequentRenterPointsLine(frequentRenterPoints));
 
-            return result;
+            return statementBuilder.ToString();
 
         }
 
+        private static bool IsBonusEligibleRental((Movie, int) each, int dr)
+        {
+            return each.Item1.PriceCode == Movie.NEW_RELEASE && dr > 1;
+        }
+
+        private static string GetRentalLine((Movie, int) each, decimal thisAmount)
+        {
+            return "\t" + each.Item1.Title + "\t" + thisAmount.ToString("0.0", CultureInfo.InvariantCulture) + "\n";
+        }
+
+        private static string GetFrequentRenterPointsLine(int frequentRenterPoints)
+        {            
+            return $"You earned {frequentRenterPoints} frequestn renter points\n";                
+        }
+
+        private static string GetAmountOwedStatement(decimal totalAmount)
+        {
+            return "Amount owed is " + totalAmount.ToString("0.0", CultureInfo.InvariantCulture) + "\n";
+        }
     }
 }
 
