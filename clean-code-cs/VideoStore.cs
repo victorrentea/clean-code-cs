@@ -13,6 +13,16 @@ namespace Victor.Training.Cleancode.VideoStore
 
     public class Customer
     {
+        private const decimal RegularPriceBase = 2;
+        private const decimal RegularPriceExtraDailyRate = 1.5m;
+        private const int RegularPriceExtraDaysThreshold = 2;
+
+        private const int NewReleaseDailyRate = 3;
+
+        private const decimal ChildrensPriceBase = 1.5m;
+        private const int ChildrensPriceExtraDaysThreshold = 3;
+        private const decimal ChildrensPriceExtraDailyRate = 1.5m;
+
         private readonly List<(Movie Movie, decimal DaysRented)> _rentals = new();
         public string Name { get; }
 
@@ -32,28 +42,28 @@ namespace Victor.Training.Cleancode.VideoStore
             var totalAmount = 0m;
             var result = $"Rental Record for {Name}\n";
 
-            foreach (var movie in _rentals)
+            foreach (var rental in _rentals)
             {
                 var priceAmount = 0m;
 
                 //dtermines the amount for each line
-                switch (movie.Item1.PriceCode)
+                switch (rental.Movie.PriceCode)
                 {
                     case PriceCode.Regular:
-                        priceAmount += 2;
-                        if (movie.DaysRented > 2)
+                        priceAmount += RegularPriceBase;
+                        if (rental.DaysRented > RegularPriceExtraDaysThreshold)
                         {
-                            priceAmount += (movie.DaysRented - 2) * 1.5m;
+                            priceAmount += (rental.DaysRented - RegularPriceExtraDaysThreshold) * RegularPriceExtraDailyRate;
                         }
                         break;
                     case PriceCode.NewRelease:
-                        priceAmount += movie.DaysRented * 3;
+                        priceAmount += rental.DaysRented * NewReleaseDailyRate;
                         break;
                     case PriceCode.Childrens:
-                        priceAmount += 1.5m;
-                        if (movie.DaysRented > 3)
+                        priceAmount += ChildrensPriceBase;
+                        if (rental.DaysRented > ChildrensPriceExtraDaysThreshold)
                         {
-                            priceAmount += (movie.DaysRented - 3) * 1.5m;
+                            priceAmount += (rental.DaysRented - ChildrensPriceExtraDaysThreshold) * ChildrensPriceExtraDailyRate;
                         }
                         break;
                 }
@@ -61,13 +71,13 @@ namespace Victor.Training.Cleancode.VideoStore
                 frequentRenterPoints++;
 
                 // add bonus for a two day new release rental
-                if (movie.Item1.PriceCode == PriceCode.NewRelease
-                    && movie.DaysRented > 1)
+                if (rental.Movie.PriceCode == PriceCode.NewRelease
+                    && rental.DaysRented > 1)
                 {
                     frequentRenterPoints++;
                 }
 
-                result += "\t" + movie.Item1.Title + "\t" + priceAmount.ToString("0.0", CultureInfo.InvariantCulture) + "\n";
+                result += "\t" + rental.Movie.Title + "\t" + priceAmount.ToString("0.0", CultureInfo.InvariantCulture) + "\n";
                 totalAmount += priceAmount;
             }
 
