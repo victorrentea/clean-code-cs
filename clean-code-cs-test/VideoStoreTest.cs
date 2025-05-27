@@ -1,6 +1,4 @@
-﻿using System;
-using Victor.Training.Cleancode.VideoStore;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 
 namespace Victor.Training.Cleancode.VideoStore.Tests
 {
@@ -27,7 +25,7 @@ namespace Victor.Training.Cleancode.VideoStore.Tests
                 "Amount owed is 33.5\n" +
                 "You earned 5 frequent renter points\n";
 
-            Assert.That(Normalize(customer.Statement()), Is.EqualTo(Normalize(expected)));
+            Assert.That(Normalize(customer.GetStatement()), Is.EqualTo(Normalize(expected)));
         }
     }
 }

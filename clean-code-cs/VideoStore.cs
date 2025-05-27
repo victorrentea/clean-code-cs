@@ -1,54 +1,34 @@
 ﻿using System.Globalization;
-using static Victor.Training.Cleancode.VideoStore.Customer;
 
 namespace Victor.Training.Cleancode.VideoStore
 {
-
-    public record Movie(string Title, MovieType MovieType);
-
-    public class Customer
+    public record Customer (string Name)
     {
-        private readonly List<Rental> _rentals = new();
-        public string Name { get; }
-        public int FrequentRenterPoints => _rentals.Count + _rentals.Count(x => x.IsEligibleForBonus);
-        public decimal TotalAmount => _rentals.Sum(rental => rental.Amount());
-
-        public Customer(string name)
-        {
-            Name = name;
-        }
-
-        
+        private readonly List<Rental> _rentals = [];
+        private int FrequentRenterPoints => _rentals.Count + _rentals.Count(x => x.IsEligibleForBonus);
+        private decimal TotalAmount => _rentals.Sum(rental => rental.Amount);
+        private string Body => string.Concat(_rentals.Select(GetBodyLine));
 
         public void AddRental(Movie movie, int numberOfDays)
         {
             _rentals.Add(new Rental(movie, numberOfDays));
         }
 
-        public string Statement()
+        public string GetStatement()
         {
-
             var result = "Rental Record for " + Name + "\n";
-            result += GetBody();
 
-            // add footer lines
+            result += Body;
+
             result += "Amount owed is " + TotalAmount.ToString("0.0", CultureInfo.InvariantCulture) + "\n";
             result += "You earned " + FrequentRenterPoints + " frequent renter points\n";
 
             return result;
         }
 
-        private string GetBody()
+        private static string GetBodyLine(Rental rental)
         {
-            var result = string.Empty;
-            foreach (var rental in _rentals)
-            {
-                result += "\t" + rental.Movie.Title + "\t" + rental.Amount().ToString("0.0", CultureInfo.InvariantCulture) +
-                          "\n";
-            }
-
-            return result;
+            return "\t" + rental.Movie.Title + "\t" + rental.Amount.ToString("0.0", CultureInfo.InvariantCulture) + "\n";
         }
     }
 }
-
