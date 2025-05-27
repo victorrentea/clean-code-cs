@@ -10,6 +10,44 @@ namespace Victor.Training.Cleancode.VideoStore
     public record Rental(Movie Movie, int DaysOfRental)
     {
         public bool IsBonusEligible => Movie.PriceCode == PriceCode.NewRelease && DaysOfRental > 1;
+
+        public decimal CalculateAmount()
+        {
+            //determines the amount for each line
+            return Movie.PriceCode switch
+            {
+                PriceCode.Regular => CalculateRegularAmount(),
+                PriceCode.NewRelease => CalculateNewReleaseAmount(),
+                PriceCode.Childrens => CalculateChildrensAmount(),
+                _ => throw new NotImplementedException(),
+            };
+        }
+
+        private decimal CalculateChildrensAmount()
+        {
+            return ExtraAmount(3) + 1.5m;
+        }
+
+        private decimal ExtraAmount(int limit)
+        {
+            var thisAmount = 0m;
+            if (DaysOfRental > limit)
+            {
+                thisAmount += (DaysOfRental - limit) * 1.5m;
+            }
+
+            return thisAmount;
+        }
+
+        private decimal CalculateRegularAmount()
+        {
+            return ExtraAmount(2) + 2;
+        }
+
+        private decimal CalculateNewReleaseAmount()
+        {
+            return DaysOfRental * 3;
+        }
     }
 
     public class Customer
@@ -31,7 +69,7 @@ namespace Victor.Training.Cleancode.VideoStore
             var statementBuilder = new StringBuilder().Append("Rental Record for " + Name + "\n");
             foreach (var rental in _rentals)
             {
-                var thisAmount = CalculateAmount(rental.Movie.PriceCode, rental.DaysOfRental);
+                var thisAmount = rental.CalculateAmount();
 
                 frequentRenterPoints++;
 
@@ -54,59 +92,6 @@ namespace Victor.Training.Cleancode.VideoStore
         {
             statementBuilder.Append(GetAmountOwedStatement(totalAmount));
             statementBuilder.Append(GetFrequentRenterPointsLine(frequentRenterPoints));
-        }
-
-        private static decimal CalculateAmount(PriceCode priceCode, int dr)
-        {
-            var thisAmount = 0m;
-
-            //determines the amount for each line
-            switch (priceCode)
-            {
-                case PriceCode.Regular:
-                    thisAmount = CalculateRegularAmount(thisAmount, dr);
-                    break;
-                case PriceCode.NewRelease:
-                    thisAmount = CalculateNewReleaseAmount(thisAmount, dr);
-                    break;
-                case PriceCode.Childrens:
-                    thisAmount = CalculateChildrensAmount(thisAmount, dr);
-                    break;
-            }
-
-            return thisAmount;
-        }
-
-        private static decimal CalculateChildrensAmount(decimal thisAmount, int dr)
-        {
-            thisAmount += 1.5m;
-            thisAmount = ExtraAmount(thisAmount, dr, 3);
-
-            return thisAmount;
-        }
-
-        private static decimal ExtraAmount(decimal thisAmount, int dr, int limit)
-        {
-            if (dr > limit)
-            {
-                thisAmount += (dr - limit) * 1.5m;
-            }
-
-            return thisAmount;
-        }
-
-        private static decimal CalculateRegularAmount(decimal thisAmount, int dr)
-        {
-            thisAmount += 2;
-            thisAmount = ExtraAmount(thisAmount, dr, 2);
-
-            return thisAmount;
-        }
-
-        private static decimal CalculateNewReleaseAmount(decimal thisAmount, int dr)
-        {
-            thisAmount += dr * 3;
-            return thisAmount;
         }
 
         private static string GetRentalLine(Movie movie, decimal thisAmount)
