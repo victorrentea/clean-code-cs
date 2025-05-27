@@ -8,7 +8,7 @@ namespace Victor.Training.Cleancode.VideoStore
 
     public record Rental(Movie Movie, int DaysOfRental)
     {
-        public bool IsBonusEligible => Movie.PriceCode == PriceCode.NewRelease && DaysOfRental > 1;
+        private bool IsBonusEligible => Movie.PriceCode == PriceCode.NewRelease && DaysOfRental > 1;
 
         public decimal CalculateAmount() => Movie.PriceCode switch
         {
@@ -37,6 +37,8 @@ namespace Victor.Training.Cleancode.VideoStore
         private decimal CalculateRegularAmount() => ExtraAmount(2) + 2;
 
         private decimal CalculateNewReleaseAmount() => DaysOfRental * 3;
+
+        public int CalculateFrequentPoints() => IsBonusEligible ? 2 : 1;
     }
 
     public class Customer
@@ -56,15 +58,10 @@ namespace Victor.Training.Cleancode.VideoStore
             var frequentRenterPoints = 0;
             var totalAmount = 0m;
             var statementBuilder = new StringBuilder().Append("Rental Record for " + Name + "\n");
+            
             foreach (var rental in _rentals)
             {
-                frequentRenterPoints++;
-
-                if (rental.IsBonusEligible)
-                {
-                    frequentRenterPoints++;
-                }
-
+                frequentRenterPoints += rental.CalculateFrequentPoints();
                 statementBuilder.Append(rental.GetRentalLine());
                 totalAmount += rental.CalculateAmount();
             }
