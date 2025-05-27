@@ -10,16 +10,16 @@ namespace Victor.Training.Cleancode.VideoStore
     {
         public bool IsBonusEligible => Movie.PriceCode == PriceCode.NewRelease && DaysOfRental > 1;
 
-        public decimal CalculateAmount()
-        {            
-            return Movie.PriceCode switch
-            {
-                PriceCode.Regular => CalculateRegularAmount(),
-                PriceCode.NewRelease => CalculateNewReleaseAmount(),
-                PriceCode.Childrens => CalculateChildrensAmount(),
-                _ => throw new NotImplementedException(),
-            };
-        }
+        public decimal CalculateAmount() => Movie.PriceCode switch
+        {
+            PriceCode.Regular => CalculateRegularAmount(),
+            PriceCode.NewRelease => CalculateNewReleaseAmount(),
+            PriceCode.Childrens => CalculateChildrensAmount(),
+            _ => throw new NotImplementedException(),
+        };
+
+        public string GetRentalLine() =>
+            $"\t{Movie.Title}\t{CalculateAmount().ToString("0.0", CultureInfo.InvariantCulture)}\n";
 
         private decimal CalculateChildrensAmount() => ExtraAmount(3) + 1.5m;
 
@@ -58,8 +58,6 @@ namespace Victor.Training.Cleancode.VideoStore
             var statementBuilder = new StringBuilder().Append("Rental Record for " + Name + "\n");
             foreach (var rental in _rentals)
             {
-                var thisAmount = rental.CalculateAmount();
-
                 frequentRenterPoints++;
 
                 if (rental.IsBonusEligible)
@@ -67,8 +65,8 @@ namespace Victor.Training.Cleancode.VideoStore
                     frequentRenterPoints++;
                 }
 
-                statementBuilder.Append(GetRentalLine(rental.Movie, thisAmount));
-                totalAmount += thisAmount;
+                statementBuilder.Append(rental.GetRentalLine());
+                totalAmount += rental.CalculateAmount();
             }
 
             AddFooterLines(frequentRenterPoints, totalAmount, statementBuilder);
@@ -81,9 +79,6 @@ namespace Victor.Training.Cleancode.VideoStore
             statementBuilder.Append(GetAmountOwedStatement(totalAmount));
             statementBuilder.Append(GetFrequentRenterPointsLine(frequentRenterPoints));
         }
-
-        private static string GetRentalLine(Movie movie, decimal thisAmount) =>
-            $"\t{movie.Title}\t{thisAmount.ToString("0.0", CultureInfo.InvariantCulture)}\n";
 
         private static string GetFrequentRenterPointsLine(int frequentRenterPoints) =>
             $"You earned {frequentRenterPoints} frequent renter points\n";
