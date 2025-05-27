@@ -14,25 +14,15 @@ public record Rental(Movie Movie, int DaysOfRental)
         _ => throw new NotImplementedException(),
     };
 
-    public string GetRentalLine() =>
-        $"\t{Movie.Title}\t{CalculateAmount().ToString("0.0", CultureInfo.InvariantCulture)}\n";
+    public string GetRentalLine() => $"\t{Movie.Title}\t{CalculateAmount().ToString("0.0", CultureInfo.InvariantCulture)}\n";
+
+    public int CalculateFrequentPoints() => IsBonusEligible ? 2 : 1;
 
     private decimal CalculateChildrensAmount() => ExtraAmount(3) + 1.5m;
 
-    private decimal ExtraAmount(int limit)
-    {
-        var thisAmount = 0m;
-        if (DaysOfRental > limit)
-        {
-            thisAmount += (DaysOfRental - limit) * 1.5m;
-        }
-
-        return thisAmount;
-    }
+    private decimal ExtraAmount(int minimumDaysOfRent) => DaysOfRental > minimumDaysOfRent ? (DaysOfRental - minimumDaysOfRent) * 1.5m : 0m;
 
     private decimal CalculateRegularAmount() => ExtraAmount(2) + 2;
 
     private decimal CalculateNewReleaseAmount() => DaysOfRental * 3;
-
-    public int CalculateFrequentPoints() => IsBonusEligible ? 2 : 1;
 }
