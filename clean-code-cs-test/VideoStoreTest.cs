@@ -13,7 +13,7 @@ namespace Victor.Training.Cleancode.VideoStore.Tests
         [Test]
         public void CharacterizationTest()
         {
-            var customer = new Customer("John Doe");
+            var customer = new clean_code_cs.Customer("John Doe");
             customer.AddRental(new Rental(new Movie("Star Wars", PriceCode.NewRelease), 6));
             customer.AddRental(new Rental(new Movie("Sofia", PriceCode.Childrens), 7));
             customer.AddRental(new Rental(new Movie("Inception", PriceCode.Regular), 5));
