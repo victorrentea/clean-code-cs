@@ -85,6 +85,7 @@ namespace Victor.Training.Cleancode.VideoStore
             result += "You earned " + frequentRenterPoints.ToString() + " frequent renter points\n";
 
             return result;
+
         }
 
     }
