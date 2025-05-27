@@ -7,53 +7,61 @@ namespace Victor.Training.Cleancode.VideoStore
 {
     public record Movie(string Title, PriceCode PriceCode);
 
+    public record Rental(Movie Movie, int DaysOfRental)
+    {
+        public bool IsBonusEligible => Movie.PriceCode == PriceCode.NewRelease && DaysOfRental > 1;
+    }
+
     public class Customer
     {
-        private readonly List<(Movie,int)> _rentals = new();
+        private readonly List<Rental> _rentals = new();
         private string Name { get; }
 
         public Customer(string name) => Name = name;
 
-        public void AddRental(Movie movie, int d)
+        public void AddRental(Rental rental)
         {
-            _rentals.Add((movie, d));
+            _rentals.Add(rental);
         }
 
         public string Statement()
         {
             var frequentRenterPoints = 0;
-            var totalAmount = 0m;            
+            var totalAmount = 0m;
             var statementBuilder = new StringBuilder().Append("Rental Record for " + Name + "\n");
             foreach (var rental in _rentals)
             {
-                var thisAmount = CalculateAmount(rental.Item1, rental.Item2);
+                var thisAmount = CalculateAmount(rental.Movie.PriceCode, rental.DaysOfRental);
 
                 frequentRenterPoints++;
 
-                // add bonus for a two day new release rental
-                if (IsBonusEligibleRental(rental.Item1, rental.Item2))
+                if (rental.IsBonusEligible)
                 {
                     frequentRenterPoints++;
                 }
 
-                statementBuilder.Append(GetRentalLine(rental.Item1, thisAmount));
+                statementBuilder.Append(GetRentalLine(rental.Movie, thisAmount));
                 totalAmount += thisAmount;
             }
 
-            // add footer lines
-            statementBuilder.Append(GetAmountOwedStatement(totalAmount));
-            statementBuilder.Append(GetFrequentRenterPointsLine(frequentRenterPoints));
+            AddFooterLines(frequentRenterPoints, totalAmount, statementBuilder);
 
             return statementBuilder.ToString();
 
         }
 
-        private static decimal CalculateAmount(Movie movie, int dr)
+        private static void AddFooterLines(int frequentRenterPoints, decimal totalAmount, StringBuilder statementBuilder)
+        {
+            statementBuilder.Append(GetAmountOwedStatement(totalAmount));
+            statementBuilder.Append(GetFrequentRenterPointsLine(frequentRenterPoints));
+        }
+
+        private static decimal CalculateAmount(PriceCode priceCode, int dr)
         {
             var thisAmount = 0m;
 
             //determines the amount for each line
-            switch (movie.PriceCode)
+            switch (priceCode)
             {
                 case PriceCode.Regular:
                     thisAmount = CalculateRegularAmount(thisAmount, dr);
@@ -99,12 +107,6 @@ namespace Victor.Training.Cleancode.VideoStore
         {
             thisAmount += dr * 3;
             return thisAmount;
-        }
-
-
-        private static bool IsBonusEligibleRental(Movie movie, int dr)
-        {
-            return movie.PriceCode == PriceCode.NewRelease && dr > 1;
         }
 
         private static string GetRentalLine(Movie movie, decimal thisAmount)
