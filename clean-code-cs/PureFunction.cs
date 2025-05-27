@@ -1,14 +1,24 @@
 ﻿using System;
 namespace Victor.Training.Cleancode
 {
-    public class PureFunction(
-        /*readonly*/ ICustomerRepo customerRepo,
-        IThirdPartyPricesApi thirdPartyPricesApi,
-        ICouponRepo couponRepo,
-        IProductRepo productRepo)
+    public class PureFunction
     {
-        
-        // TODO extract most complexity into a pure function:
+
+        ICustomerRepo customerRepo;
+        IThirdPartyPricesApi thirdPartyPricesApi;
+        ICouponRepo couponRepo;
+        IProductRepo productRepo;
+
+        public PureFunction(ICustomerRepo customerRepo, IThirdPartyPricesApi thirdPartyPricesApi, ICouponRepo couponRepo, IProductRepo productRepo)
+        {
+            this.customerRepo = customerRepo;
+            this.thirdPartyPricesApi = thirdPartyPricesApi;
+            this.couponRepo = couponRepo;
+            this.productRepo = productRepo;
+        }
+
+
+        //TODO extract most complexity into a pure function:
         //  to have clear the inputs
         //  to be testable without mocks
         public Dictionary<long, double> ComputePrices(
@@ -20,6 +30,18 @@ namespace Victor.Training.Cleancode
 
             List<Product> products = productRepo.FindAllById(productIds); // SELECT .. WHERE ID IN (?,?..?)
 
+            //Q: what if products.size=1M. won't + 1 foreach hurt performance
+            //A: NO. NEVER. because you already had it in memory in a List = loading that list took many seconds. Out of Memory?
+            // compared to the time took to I/O
+            //BTW: the correct way to process 1M products is using LINQ Streaming (never materialize the actual list).
+            // then it IS important (ofc) not to traverse the data in DB twice!
+
+            //Q: when can +1 foreach hurt performance, as measured in prod
+            //A: Gaming: added to the main game loop in a Unity game, since the (decent) list would already be in memory, and + few ms matter
+            //A: StockTrading: response times of 50 microseconds (us) 10**-6 server.
+            //> in such cases usually memory allocation is discouraged as well (not allowed to 'new' objects)
+
+            // From faculty we come with myth of O(N2) O(NlogN)
             Dictionary<long, double> initialPrices = ResolveInitialPrices(thirdPartyPricesApi, internalPrices, products);
             
             var result = ApplyCoupons(customer.Coupons, products, initialPrices);
