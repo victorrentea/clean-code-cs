@@ -28,7 +28,7 @@ namespace Victor.Training.Cleancode.VideoStore
         {
             return Movie.PriceCode switch
             {
-                PriceCode.Regular => DetermineRegularAmount(),
+                PriceCode.Regular => DetermineRegularAmount(), 
                 PriceCode.NewRelease => DetermineNewReleaseAmount(),
                 PriceCode.Children => DetermineChildrenAmount(),
                 _ => throw new ArgumentOutOfRangeException(nameof(Movie.PriceCode)),
@@ -88,17 +88,21 @@ namespace Victor.Training.Cleancode.VideoStore
             string result = $"Rental Record for {Name}\n";
 
             totalAmount = _rentals.Sum(rental => rental.DetermineRentalAmount());
- 
+
             frequentRenterPoints = _rentals.Sum(rental => rental.FrequentRenterPoints);
 
-            result += String.Concat(_rentals.Select(rental =>
-                    $"\t{rental.Movie.Title}\t{rental.DetermineRentalAmount().ToString("0.0", CultureInfo.InvariantCulture)}\n"));
+            result += string.Concat(_rentals.Select(rental => PrintBodyLine(rental)));
 
             // add footer lines
             result += $"Amount owed is {totalAmount.ToString("0.0", CultureInfo.InvariantCulture)}\n";
             result += $"You earned {frequentRenterPoints} frequent renter points\n";
 
             return result;
+        }
+
+        private static string PrintBodyLine(Rental rental)
+        {
+            return $"\t{rental.Movie.Title}\t{rental.DetermineRentalAmount().ToString("0.0", CultureInfo.InvariantCulture)}\n";
         }
     }
 }
